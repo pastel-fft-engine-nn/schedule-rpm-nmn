@@ -112,7 +112,7 @@
     .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .month-label { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
     .nav-arrows { display: flex; gap: 12px; }
-    .nav-btn { background: none; border: none; color: #007aff; font-size: 22px; cursor: pointer; padding: 2px 6px; line-height: 1; }
+    .nav-btn { background: none; border: none; color: #007aff; font-size: 33px; cursor: pointer; padding: 4px 10px; line-height: 1; font-weight: 500; }
     .view-tabs { display: flex; background: #e5e5ea; border-radius: 8px; padding: 2px; margin-bottom: 6px; }
     .view-tab {
       flex: 1; text-align: center; padding: 5px 0; font-size: 13px; font-weight: 500;
@@ -205,7 +205,7 @@
       height: 48px; font-size: 11px; color: #8e8e93; text-align: right;
       padding-right: 6px; line-height: 1; position: relative; top: -6px;
     }
-    .week-col { border-left: 0.5px solid #e5e5ea; position: relative; height: calc(48px * 15); }
+    .week-col { border-left: 0.5px solid #e5e5ea; position: relative; height: calc(48px * 24); }
     .week-col.holiday-col { background: rgba(255, 59, 48, 0.04); }
     .hour-line { position: absolute; left: 0; right: 0; height: 0.5px; background: #e5e5ea; }
     .week-event {
@@ -659,7 +659,7 @@
       <!-- 日付はカレンダー選択日から自動（非表示） -->
       <input type="hidden" id="eventDate" value="">
 
-      <div class="section-label">日時</div>
+      <div class="section-label">日時・場所</div>
       <div class="form-group">
         <div class="form-row">
           <div class="form-label">開始</div>
@@ -668,6 +668,19 @@
         <div class="form-row">
           <div class="form-label">終了</div>
           <input type="time" class="form-input" id="eventEnd" value="10:00" step="300">
+        </div>
+        <div class="form-row">
+          <div class="form-label">場所</div>
+          <input type="text" class="form-input" id="eventAddress" placeholder="コース名・会場など">
+        </div>
+        <div class="form-row">
+          <div class="form-label">GPS</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+            <span id="m4GpsStatus" style="font-size:12px;color:#8e8e93;">未取得</span>
+            <button type="button" class="media-btn" style="flex:none;padding:8px 12px;" onclick="getM4GPS()">取得</button>
+          </div>
+          <input type="hidden" id="m4Lat" value="">
+          <input type="hidden" id="m4Lng" value="">
         </div>
       </div>
 
@@ -824,19 +837,6 @@
             <option value="コースアウト">コースアウト</option>
           </select>
         </div>
-        <div class="form-row">
-          <div class="form-label">GPS</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-            <span id="m4GpsStatus" style="font-size:12px;color:#8e8e93;">未取得</span>
-            <button type="button" class="media-btn" style="flex:none;padding:8px 12px;" onclick="getM4GPS()">取得</button>
-          </div>
-          <input type="hidden" id="m4Lat" value="">
-          <input type="hidden" id="m4Lng" value="">
-        </div>
-        <div class="form-row">
-          <div class="form-label">場所</div>
-          <input type="text" class="form-input" id="eventAddress" placeholder="コース名・会場など">
-        </div>
       </div>
 
       <div class="section-label">マシン名・メモ</div>
@@ -867,9 +867,9 @@
         <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none" onchange="handleFiles(event)">
         <input type="file" id="fileInputImage" accept="image/*" multiple style="display:none" onchange="handleFiles(event)">
         <input type="file" id="fileInputVideo" accept="video/*" multiple style="display:none" onchange="handleFiles(event)">
-        <p style="font-size:11px;color:#8e8e93;margin-top:8px;">写真・動画は IndexedDB に保存され、保存後もプレビュー・拡大できます。動画の最高画質はライブラリ追加が確実です。</p>
       </div>
       <button class="modal-save-bottom" id="saveBtnBottom" onclick="saveEvent()">保存</button>
+      <button class="delete-btn" id="cancelBtnBottom" onclick="closeModal()" style="color:#3a3a3c;">キャンセル</button>
       <button class="delete-btn" id="deleteBtn" style="display:none" onclick="deleteEvent()">内容を削除</button>
     </div>
   </div>
@@ -1313,7 +1313,7 @@
         'rgba(255, 59, 48, 0.90)', 'rgba(255, 149, 0, 0.90)', 'rgba(255, 179, 0, 0.92)',
         'rgba(52, 199, 89, 0.90)', 'rgba(50, 173, 230, 0.90)', 'rgba(0, 122, 255, 0.90)', 'rgba(175, 82, 222, 0.90)'
       ];
-      var HOUR_START = 7, HOUR_END = 21, HOUR_COUNT = HOUR_END - HOUR_START, ROW_H = 48;
+      var HOUR_START = 0, HOUR_END = 23, HOUR_COUNT = HOUR_END - HOUR_START, ROW_H = 48;
 
       var headerHtml = '<div style="width:48px"></div>';
       for (var i = 0; i < 7; i++) {
