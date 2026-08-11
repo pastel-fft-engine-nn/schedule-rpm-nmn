@@ -19,10 +19,10 @@
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .header-title { font-size: 16px; font-weight: 600; }
     .header-actions { display: flex; align-items: center; gap: 4px; }
-    .today-btn, .media-header-btn {
+    .today-btn, .media-header-btn, .search-header-btn {
       background: none; border: none; color: #007aff; font-size: 15px; cursor: pointer; padding: 2px 6px;
     }
-    .media-header-btn { font-size: 15px; }
+    .media-header-btn, .search-header-btn { font-size: 15px; }
     .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .month-label { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
     .nav-arrows { display: flex; gap: 12px; }
@@ -271,6 +271,44 @@
     }
     .month-view { display: none; }
     .month-view.active { display: block; }
+    .search-view { display: none; background: #f2f2f7; min-height: calc(100vh - 120px); padding-bottom: 80px; }
+    .search-view.active { display: block; }
+    .search-filter-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+      background: #fff; margin: 10px 12px; padding: 12px; border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .search-filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .search-filter-item label {
+      font-size: 11px; color: #8e8e93; font-weight: 600;
+    }
+    .search-filter-item select {
+      padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e5ea;
+      font-size: 14px; background: #f9f9fb; outline: none; color: #000;
+      -webkit-appearance: none; appearance: none;
+    }
+    .search-btn-row {
+      grid-column: span 2; display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; flex-wrap: wrap;
+    }
+    .search-action-btn {
+      border: none; border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .search-action-btn.primary { background: #007aff; color: #fff; }
+    .search-action-btn.gray { background: #e5e5ea; color: #3a3a3c; }
+    .search-results {
+      padding: 0 12px 20px;
+    }
+    .search-results-title {
+      font-size: 13px; font-weight: 600; color: #8e8e93; margin: 4px 4px 10px;
+    }
+    .search-result-card {
+      background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); cursor: pointer;
+    }
+    .search-result-card:active { background: #f2f2f7; }
+    .search-result-date { font-size: 12px; color: #8e8e93; margin-bottom: 2px; }
+    .search-result-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .search-result-meta { font-size: 12px; color: #3a3a3c; line-height: 1.4; }
     .gallery-modal .modal { max-height: 88vh; }
     .gallery-tabs {
       display: flex; background: #e5e5ea; border-radius: 9px; padding: 2px; margin: 12px 16px;
@@ -380,6 +418,7 @@
       <div class="header-title">スケジュール / ミニ四駆</div>
       <div class="header-actions">
         <button class="today-btn" onclick="goToToday()">今日</button>
+        <button class="search-header-btn" onclick="openSearchView()" title="セッティング検索">🔍</button>
         <button class="media-header-btn" onclick="openGallery()" title="すべての写真・動画">📷</button>
       </div>
     </div>
@@ -425,6 +464,61 @@
   <div class="day-view" id="dayView">
     <div class="day-view-date" id="dayViewDate"></div>
     <div class="events-list" id="dayEventsList"></div>
+  </div>
+
+  <!-- セッティング検索ビュー -->
+  <div class="search-view" id="searchView">
+    <div class="search-filter-grid">
+      <div class="search-filter-item">
+        <label>日付</label>
+        <select id="sfDate"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>種別</label>
+        <select id="sfEventType"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>モーター</label>
+        <select id="sfMotor"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>クラス</label>
+        <select id="sfClass"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>ギヤ比</label>
+        <select id="sfGear"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>電圧</label>
+        <select id="sfVoltage"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>速度</label>
+        <select id="sfSpeed"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>RPM</label>
+        <select id="sfRpm"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>タイヤ径</label>
+        <select id="sfTire"><option value="">すべて</option></select>
+      </div>
+      <div class="search-filter-item">
+        <label>結果</label>
+        <select id="sfResult"><option value="">すべて</option></select>
+      </div>
+      <div class="search-btn-row">
+        <button type="button" class="search-action-btn gray" onclick="resetSearchFilters()">リセット</button>
+        <button type="button" class="search-action-btn primary" onclick="runSearch()">検索</button>
+        <button type="button" class="search-action-btn gray" onclick="closeSearchView()">閉じる</button>
+      </div>
+    </div>
+    <div class="search-results">
+      <div class="search-results-title" id="searchResultsTitle">検索結果</div>
+      <div id="searchResultsList"></div>
+    </div>
   </div>
 
   <button class="fab" onclick="openAddModal()">＋</button>
@@ -909,12 +1003,26 @@
       document.getElementById('monthView').classList.toggle('active', view === 'month');
       document.getElementById('weekView').classList.toggle('active', view === 'week');
       document.getElementById('dayView').classList.toggle('active', view === 'day');
+      var searchEl = document.getElementById('searchView');
+      if (searchEl) searchEl.classList.toggle('active', view === 'search');
+      // 検索ビュー時はタブ・月ナビ・FABを隠す
+      var tabs = document.querySelector('.view-tabs');
+      var monthNav = document.querySelector('.month-nav');
+      var fab = document.querySelector('.fab');
+      if (tabs) tabs.style.display = (view === 'search') ? 'none' : '';
+      if (monthNav) monthNav.style.display = (view === 'search') ? 'none' : '';
+      if (fab) fab.style.display = (view === 'search') ? 'none' : '';
       if (view === 'month') renderMonth();
       else if (view === 'week') renderWeek();
-      else renderDay();
+      else if (view === 'day') renderDay();
+      else if (view === 'search') {
+        populateSearchFilters();
+        runSearch();
+      }
       updatePeriodLabel();
     }
     function navigate(delta) {
+      if (currentView === 'search') return;
       if (currentView === 'month') {
         currentDate.setMonth(currentDate.getMonth() + delta);
         renderMonth();
@@ -944,6 +1052,8 @@
         var end = new Date(start);
         end.setDate(end.getDate() + 6);
         label.textContent = (start.getMonth() + 1) + '/' + start.getDate() + ' – ' + (end.getMonth() + 1) + '/' + end.getDate();
+      } else if (currentView === 'search') {
+        label.textContent = 'セッティング検索';
       } else label.textContent = formatDisplayDate(selectedDate);
     }
 
@@ -1662,7 +1772,10 @@
         closeModal();
         if (currentView === 'month') renderMonth();
         else if (currentView === 'week') renderWeek();
-        else {
+        else if (currentView === 'search') {
+          populateSearchFilters();
+          runSearch();
+        } else {
           selectedDate = new Date(date + 'T12:00:00');
           renderDay();
         }
@@ -1675,7 +1788,10 @@
       closeModal();
       if (currentView === 'month') renderMonth();
       else if (currentView === 'week') renderWeek();
-      else renderDay();
+      else if (currentView === 'search') {
+        populateSearchFilters();
+        runSearch();
+      } else renderDay();
     }
 
     // ===== 端末保存 =====
@@ -2126,6 +2242,164 @@
         openMaps(addr.getAttribute('data-address'));
       }
     });
+
+    // ===== セッティング検索（プルダウン） =====
+    var searchFilters = {
+      date: null, eventType: null, motor: null, classType: null,
+      gear: null, voltage: null, speed: null, rpm: null, tire: null, result: null
+    };
+
+    function openSearchView() {
+      switchView('search');
+    }
+    function closeSearchView() {
+      switchView('month');
+    }
+
+    function getSearchFilterEls() {
+      return {
+        date: document.getElementById('sfDate'),
+        eventType: document.getElementById('sfEventType'),
+        motor: document.getElementById('sfMotor'),
+        classType: document.getElementById('sfClass'),
+        gear: document.getElementById('sfGear'),
+        voltage: document.getElementById('sfVoltage'),
+        speed: document.getElementById('sfSpeed'),
+        rpm: document.getElementById('sfRpm'),
+        tire: document.getElementById('sfTire'),
+        result: document.getElementById('sfResult')
+      };
+    }
+
+    function m4Val(ev, key) {
+      var m4 = ev.m4 || {};
+      var v = m4[key];
+      if (v == null || v === '') return '';
+      return String(v);
+    }
+
+    function populateSearchFilters() {
+      var els = getSearchFilterEls();
+      var events = getEvents();
+      var maps = {
+        date: {}, eventType: {}, motor: {}, classType: {},
+        gear: {}, voltage: {}, speed: {}, rpm: {}, tire: {}, result: {}
+      };
+      events.forEach(function(ev) {
+        if (ev.date) maps.date[ev.date] = true;
+        var et = m4Val(ev, 'eventType'); if (et) maps.eventType[et] = true;
+        var mo = m4Val(ev, 'motorType'); if (mo) maps.motor[mo] = true;
+        var cl = m4Val(ev, 'classType'); if (cl) maps.classType[cl] = true;
+        var ge = m4Val(ev, 'gearRatio'); if (ge) maps.gear[ge] = true;
+        var vo = m4Val(ev, 'voltage'); if (vo) maps.voltage[vo] = true;
+        var sp = m4Val(ev, 'speed'); if (sp) maps.speed[sp] = true;
+        var rp = m4Val(ev, 'rpm'); if (rp) maps.rpm[rp] = true;
+        var ti = m4Val(ev, 'tireDiameter'); if (ti) maps.tire[ti] = true;
+        var re = m4Val(ev, 'result'); if (re) maps.result[re] = true;
+      });
+      function fill(select, obj, sortFn) {
+        if (!select) return;
+        var current = select.value;
+        var keys = Object.keys(obj);
+        if (sortFn) keys.sort(sortFn);
+        else keys.sort();
+        select.innerHTML = '<option value="">すべて</option>';
+        keys.forEach(function(k) {
+          var opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = k;
+          select.appendChild(opt);
+        });
+        if (current && keys.indexOf(current) !== -1) select.value = current;
+      }
+      fill(els.date, maps.date, function(a, b) { return b.localeCompare(a); });
+      fill(els.eventType, maps.eventType);
+      fill(els.motor, maps.motor);
+      fill(els.classType, maps.classType);
+      fill(els.gear, maps.gear);
+      fill(els.voltage, maps.voltage, function(a, b) { return Number(a) - Number(b); });
+      fill(els.speed, maps.speed, function(a, b) { return Number(a) - Number(b); });
+      fill(els.rpm, maps.rpm, function(a, b) { return Number(a) - Number(b); });
+      fill(els.tire, maps.tire, function(a, b) { return Number(a) - Number(b); });
+      fill(els.result, maps.result);
+    }
+
+    function runSearch() {
+      var els = getSearchFilterEls();
+      var f = {
+        date: els.date ? els.date.value : '',
+        eventType: els.eventType ? els.eventType.value : '',
+        motor: els.motor ? els.motor.value : '',
+        classType: els.classType ? els.classType.value : '',
+        gear: els.gear ? els.gear.value : '',
+        voltage: els.voltage ? els.voltage.value : '',
+        speed: els.speed ? els.speed.value : '',
+        rpm: els.rpm ? els.rpm.value : '',
+        tire: els.tire ? els.tire.value : '',
+        result: els.result ? els.result.value : ''
+      };
+      var filtered = getEvents().filter(function(ev) {
+        if (f.date && ev.date !== f.date) return false;
+        if (f.eventType && m4Val(ev, 'eventType') !== f.eventType) return false;
+        if (f.motor && m4Val(ev, 'motorType') !== f.motor) return false;
+        if (f.classType && m4Val(ev, 'classType') !== f.classType) return false;
+        if (f.gear && m4Val(ev, 'gearRatio') !== f.gear) return false;
+        if (f.voltage && m4Val(ev, 'voltage') !== f.voltage) return false;
+        if (f.speed && m4Val(ev, 'speed') !== f.speed) return false;
+        if (f.rpm && m4Val(ev, 'rpm') !== f.rpm) return false;
+        if (f.tire && m4Val(ev, 'tireDiameter') !== f.tire) return false;
+        if (f.result && m4Val(ev, 'result') !== f.result) return false;
+        return true;
+      });
+      // 新しい順
+      filtered.sort(function(a, b) {
+        if (a.date !== b.date) return (b.date || '').localeCompare(a.date || '');
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+      var list = document.getElementById('searchResultsList');
+      var title = document.getElementById('searchResultsTitle');
+      if (title) title.textContent = '検索結果（' + filtered.length + '件）';
+      if (!list) return;
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state" style="padding:32px 0"><p>該当するセッティングはありません</p></div>';
+        return;
+      }
+      list.innerHTML = filtered.map(function(ev) {
+        var m4 = ev.m4 || {};
+        var badges = '';
+        if (m4.eventType) badges += '<span class="m4-badge' + (m4.eventType === '大会' ? ' race' : '') + '">' + escapeHtml(m4.eventType) + '</span>';
+        if (m4.classType) badges += '<span class="m4-badge">' + escapeHtml(m4.classType) + '</span>';
+        if (m4.result === '完走') badges += '<span class="m4-badge finish">完走</span>';
+        if (m4.result === 'コースアウト') badges += '<span class="m4-badge out">コースアウト</span>';
+        var parts = [];
+        if (m4.motorType) parts.push(m4.motorType);
+        if (m4.gearRatio) parts.push('ギヤ ' + m4.gearRatio);
+        if (m4.voltage != null && m4.voltage !== '') parts.push(m4.voltage + 'V');
+        if (m4.speed != null && m4.speed !== '') parts.push(m4.speed + ' km/h');
+        if (m4.rpm != null && m4.rpm !== '') parts.push(m4.rpm + ' rpm');
+        if (m4.tireDiameter != null && m4.tireDiameter !== '') parts.push('タイヤ ' + m4.tireDiameter + 'mm');
+        var dateLabel = ev.date || '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateLabel)) {
+          var p = dateLabel.split('-');
+          dateLabel = p[0] + '/' + parseInt(p[1], 10) + '/' + parseInt(p[2], 10);
+        }
+        return '<div class="search-result-card" data-id="' + escapeAttr(ev.id) + '" onclick="openEditModal(\'' + escapeAttr(ev.id) + '\')">' +
+          '<div class="search-result-date">' + escapeHtml(dateLabel) + (ev.address ? ' · ' + escapeHtml(ev.address) : '') + '</div>' +
+          '<div class="search-result-title">' + escapeHtml(ev.title || 'セッティング') + '</div>' +
+          (badges ? '<div style="margin:2px 0 4px;">' + badges + '</div>' : '') +
+          (parts.length ? '<div class="search-result-meta">' + escapeHtml(parts.join(' · ')) + '</div>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    function resetSearchFilters() {
+      var els = getSearchFilterEls();
+      Object.keys(els).forEach(function(k) {
+        if (els[k]) els[k].value = '';
+      });
+      populateSearchFilters();
+      runSearch();
+    }
 
     // IndexedDB から読み込んでから表示
     initEventsStorage().then(function() {
