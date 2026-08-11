@@ -6,9 +6,95 @@
   <title>スケジュール & ミニ四駆セッティング</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: #f2f2f7; color: #000; min-height: 100vh; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+    /* 全スクロール領域をスムーズに */
+    .today-section,
+    .week-view,
+    .day-view,
+    .search-view,
+    .modal,
+    .gallery-body,
+    .events-list,
+    .search-results,
+    .event-media {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+    }
+    /* ボタン・タップ可能要素の押し込みフィードバック */
+    button,
+    .view-tab,
+    .day-cell,
+    .event-card,
+    .search-result-card,
+    .media-btn,
+    .map-picker-item,
+    .gallery-item,
+    .week-event,
+    .fab,
+    .copy-btn,
+    .addr-copy-btn,
+    .search-action-btn,
+    .search-freeword-clear,
+    .nav-btn,
+    .today-btn,
+    .media-header-btn,
+    .search-header-btn,
+    .modal-close,
+    .modal-save,
+    .modal-save-bottom,
+    .delete-btn {
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+    button:active,
+    .view-tab:active,
+    .media-btn:active,
+    .map-picker-item:active,
+    .search-action-btn:active,
+    .search-freeword-clear:active,
+    .nav-btn:active,
+    .today-btn:active,
+    .media-header-btn:active,
+    .search-header-btn:active,
+    .modal-close:active,
+    .modal-save:active,
+    .modal-save-bottom:active,
+    .delete-btn:active,
+    .copy-btn:active,
+    .addr-copy-btn:active,
+    .gallery-item:active,
+    .search-result-card:active,
+    .week-event:active {
+      transform: scale(0.94);
+      opacity: 0.82;
+      filter: brightness(0.95);
+    }
+    .day-cell:active {
+      background: rgba(0, 0, 0, 0.08);
+      transform: scale(0.97);
+    }
+    .event-card:active {
+      transform: scale(0.985);
+      opacity: 0.92;
+    }
+    .fab:active {
+      transform: scale(0.88);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+    }
+    .view-tab.active:active {
+      transform: scale(0.96);
     }
     .app-header {
       background: rgba(255, 255, 255, 0.88);
@@ -86,7 +172,12 @@
     }
     .month-view .calendar-grid { flex: 0 0 auto; }
     .month-view .today-section { flex: 1 1 auto; }
-    .week-view { display: none; background: #fff; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .week-view {
+      display: none; background: #fff;
+      overflow-x: auto; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      max-height: calc(100vh - 120px);
+    }
     .week-view.active { display: block; }
     .week-header {
       display: grid; grid-template-columns: 48px repeat(7, 1fr); border-bottom: 0.5px solid #e5e5ea;
@@ -209,6 +300,9 @@
     }
     .form-input::placeholder { color: #c7c7cc; }
     textarea.form-input { min-height: 72px; resize: none; padding: 2px 0; }
+    input[type="time"].form-input {
+      min-height: 28px; font-size: 16px; font-variant-numeric: tabular-nums;
+    }
     .media-section { padding: 8px 16px 16px; }
     .media-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
     .media-btn-row { display: flex; gap: 8px; }
@@ -564,8 +658,18 @@
       </div>
       <!-- 日付はカレンダー選択日から自動（非表示） -->
       <input type="hidden" id="eventDate" value="">
-      <input type="hidden" id="eventStart" value="">
-      <input type="hidden" id="eventEnd" value="">
+
+      <div class="section-label">日時</div>
+      <div class="form-group">
+        <div class="form-row">
+          <div class="form-label">開始</div>
+          <input type="time" class="form-input" id="eventStart" value="09:00" step="300">
+        </div>
+        <div class="form-row">
+          <div class="form-label">終了</div>
+          <input type="time" class="form-input" id="eventEnd" value="10:00" step="300">
+        </div>
+      </div>
 
       <!-- ミニ四駆セッティング -->
       <div class="section-label">マシン・走行</div>
@@ -1255,16 +1359,25 @@
         dayEvents.forEach(function(ev) {
           var startParts = (ev.start || '09:00').split(':').map(Number);
           var endParts = (ev.end || '10:00').split(':').map(Number);
-          var sh = startParts[0], sm = startParts[1];
-          var eh = endParts[0], em = endParts[1];
+          var sh = startParts[0] || 0, sm = startParts[1] || 0;
+          var eh = endParts[0] || 0, em = endParts[1] || 0;
+          // 終了が開始以前なら +1時間
+          if (eh * 60 + em <= sh * 60 + sm) {
+            eh = sh + 1;
+            em = sm;
+            if (eh > 23) { eh = 23; em = 59; }
+          }
           if (eh < HOUR_START || sh > HOUR_END) return;
           if (sh < HOUR_START) { sh = HOUR_START; sm = 0; }
           if (eh > HOUR_END) { eh = HOUR_END; em = 0; }
           var top = ((sh - HOUR_START) + sm / 60) * ROW_H;
           var height = ((eh + em / 60) - (sh + sm / 60)) * ROW_H;
-          if (height < 18) height = 18;
+          if (height < 22) height = 22;
+          var timeLabel = (ev.start || '') + (ev.end ? '–' + ev.end : '');
           bodyHtml += '<div class="week-event" style="top:' + top + 'px;height:' + height + 'px;background:' + color + '" data-id="' + ev.id + '">' +
-            '<div class="week-event-title">' + escapeHtml(ev.title || '無題') + '</div></div>';
+            '<div class="week-event-title">' + escapeHtml(ev.title || '無題') + '</div>' +
+            (timeLabel ? '<div style="font-size:9px;opacity:0.9;">' + escapeHtml(timeLabel) + '</div>' : '') +
+            '</div>';
         });
         bodyHtml += '</div>';
       }
@@ -1692,10 +1805,17 @@
       var baseDate = currentView === 'day' ? selectedDate : (currentView === 'week' ? currentDate : new Date());
       document.getElementById('eventDate').value = formatDateKey(baseDate);
       var now = new Date();
-      var hh = String(now.getHours()).padStart(2, '0');
-      var mm = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('eventStart').value = hh + ':' + mm;
-      document.getElementById('eventEnd').value = hh + ':' + mm;
+      // 5分単位に丸める
+      var totalMin = now.getHours() * 60 + now.getMinutes();
+      totalMin = Math.floor(totalMin / 5) * 5;
+      var endMin = totalMin + 60;
+      function toHHMM(mins) {
+        var h = Math.floor(mins / 60) % 24;
+        var m = mins % 60;
+        return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      }
+      document.getElementById('eventStart').value = toHHMM(totalMin);
+      document.getElementById('eventEnd').value = toHHMM(endMin);
       document.getElementById('eventAddress').value = '';
       document.getElementById('eventMachineName').value = '';
       document.getElementById('eventContent').value = '';
@@ -1733,11 +1853,21 @@
       document.getElementById('deleteBtn').style.display = 'none';
       var baseDate = currentView === 'day' ? selectedDate : (currentView === 'week' ? currentDate : new Date());
       document.getElementById('eventDate').value = formatDateKey(baseDate);
-      var now = new Date();
-      var hh = String(now.getHours()).padStart(2, '0');
-      var mm = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('eventStart').value = hh + ':' + mm;
-      document.getElementById('eventEnd').value = hh + ':' + mm;
+      // コピー時は元の時間帯を維持（無ければ現在〜+1h）
+      if (ev.start && ev.end) {
+        document.getElementById('eventStart').value = ev.start;
+        document.getElementById('eventEnd').value = ev.end;
+      } else {
+        var now = new Date();
+        var totalMin = Math.floor((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+        function toHHMM(mins) {
+          var h = Math.floor(mins / 60) % 24;
+          var m = mins % 60;
+          return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+        }
+        document.getElementById('eventStart').value = toHHMM(totalMin);
+        document.getElementById('eventEnd').value = toHHMM(totalMin + 60);
+      }
       document.getElementById('eventAddress').value = ev.address || '';
       document.getElementById('eventMachineName').value = ev.machineName || '';
       document.getElementById('eventContent').value = ev.content || '';
@@ -1762,8 +1892,8 @@
     }
     function saveEvent() {
       var date = document.getElementById('eventDate').value;
-      var start = document.getElementById('eventStart').value;
-      var end = document.getElementById('eventEnd').value;
+      var start = document.getElementById('eventStart').value || '09:00';
+      var end = document.getElementById('eventEnd').value || '10:00';
       var address = document.getElementById('eventAddress').value.trim();
       var machineName = document.getElementById('eventMachineName').value.trim();
       var content = document.getElementById('eventContent').value.trim();
@@ -1772,6 +1902,16 @@
         date = formatDateKey(new Date());
         document.getElementById('eventDate').value = date;
       }
+      // 終了時刻が開始以前なら自動で+1時間
+      (function() {
+        var sp = start.split(':').map(Number);
+        var ep = end.split(':').map(Number);
+        if ((ep[0] * 60 + (ep[1] || 0)) <= (sp[0] * 60 + (sp[1] || 0))) {
+          var nm = sp[0] * 60 + (sp[1] || 0) + 60;
+          end = String(Math.floor(nm / 60) % 24).padStart(2, '0') + ':' + String(nm % 60).padStart(2, '0');
+          document.getElementById('eventEnd').value = end;
+        }
+      })();
       var hasM4 = m4.motorType || m4.classType || m4.eventType || m4.gearRatio || m4.result ||
         m4.speed != null || m4.rpm != null;
       if (!content && !address && !machineName && !hasM4 && tempMedia.length === 0) {
