@@ -2251,6 +2251,35 @@ body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn) { display:
 .an7-warn { color: #ffd60a; }
 
 </style>
+<style id="cs8Css">
+
+/* ===== COURSE BUILDER EVOLUTION proto8 ===== */
+.cs-pal-title { font-size: 12px; color: #FF973D; font-weight: 700; margin: 8px 0 4px; }
+.cs-seq { cursor: pointer; }
+.cs-seq.sel { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
+.cs-editbar { background: rgba(255,122,0,0.08); border: 1px solid rgba(255,122,0,0.4); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+.cs-eb-title { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
+.cs-sugbtn { margin-left: 8px; padding: 5px 12px; border-radius: 999px; border: none; background: #30d158; color: #062b12; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.cs-mydel { background: none; border: none; color: #ff6961; font-size: 13px; cursor: pointer; padding: 2px 4px; margin-right: 6px; }
+
+</style>
+<style id="rlCss">
+
+/* ===== LAUNCHER 6TH CARD + REMOTE LAP proto9 ===== */
+.sw-remote-btn { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: #2c2c2e; color: #fff; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.sw-remote-btn.on { background: #FF7A00; border-color: #FF7A00; }
+.sw-remote-hint { font-size: 12px; color: #aeaeb2; line-height: 1.6; text-align: center; margin-top: 2px; }
+
+</style>
+<style id="cs10Css">
+
+/* ===== COURSE VIEWPOINTS proto10 ===== */
+.cs-viewrow { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.cs-vbtn { padding: 6px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: #2c2c2e; color: #d6d6da; font-size: 12px; cursor: pointer; }
+.cs-vbtn.on { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
+.cs-viewcap { font-size: 11px; color: #aeaeb2; }
+
+</style>
 </head>
 <body class="load-zero theme-classic shell-at-home">
 <div class="app-shell">
@@ -5828,7 +5857,7 @@ if (themeMeta) themeMeta.setAttribute("content", active ? "#0d0d0f" : "#f4f2ee")
 
 
 (function initBackup() {
-  const KEYS = ["rpmHistory","rpmFavorites","rpmTarget","rpmLockSnaps","rpmCmpVoltFine","rpmCmpSplit","rpmStableGate","rpmMachine","rpmSetupFavs","rpmMachineApplied","darkMode","rpmOnboardV4","rpmIntroV1","rpmUnlock","rpmUCnt","rpmUiTheme","rpmUiThemeV2","rpmLang","rpmHistFold","rpmHistOpen","rpmStripIntroOff","rpmCsvCols","rpmHistPresets","rpmAgcNoteV1","rpmMotorUnits","rpmLedgerStock","shellLedgerUnits","shellPhotos","shellRunOutcomes","shellLedgerSort","shellCourses"];
+  const KEYS = ["rpmHistory","rpmFavorites","rpmTarget","rpmLockSnaps","rpmCmpVoltFine","rpmCmpSplit","rpmStableGate","rpmMachine","rpmSetupFavs","rpmMachineApplied","darkMode","rpmOnboardV4","rpmIntroV1","rpmUnlock","rpmUCnt","rpmUiTheme","rpmUiThemeV2","rpmLang","rpmHistFold","rpmHistOpen","rpmStripIntroOff","rpmCsvCols","rpmHistPresets","rpmAgcNoteV1","rpmMotorUnits","rpmLedgerStock","shellLedgerUnits","shellPhotos","shellRunOutcomes","shellLedgerSort","shellCourses","shellMySections"];
   const exportBtn = document.getElementById("backupExportBtn");
   const importBtn = document.getElementById("backupImportBtn");
   const file = document.getElementById("backupImportFile");
@@ -10340,6 +10369,11 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="shell-card-name">解析</div>
       <div class="shell-card-sub">ランキング・ロス・完走率</div>
     </button>
+    <button type="button" class="shell-card" onclick="shellGoCourse()">
+      <div class="shell-card-icon">🧩</div>
+      <div class="shell-card-name">コース作成</div>
+      <div class="shell-card-sub">レイアウトをパズルで組む</div>
+    </button>
   </div>
   <div class="shell-note" id="shellNote"></div>
   <div class="shell-foot">前回使ったツールは、次回起動時にそのまま開きます</div>
@@ -10380,6 +10414,10 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="stopwatch-btns">
         <button type="button" class="sw-reaction-btn" id="swReactionBtn" onclick="swOpenReaction()">⚡ 反応時間チャレンジ</button>
       </div>
+      <div class="stopwatch-btns">
+        <button type="button" class="sw-remote-btn" id="swRemoteBtn" onclick="shellToggleRemote()">🎮 リモコンラップ：OFF</button>
+      </div>
+      <div class="sw-remote-hint" id="swRemoteHint" style="display:none;">リモコン待機中：計測中に押すとラップ、止まっているときに押すとスタート。Bluetoothリモコンはキー入力（Enter）タイプが使えます</div>
       <div class="sw-stock-box" id="swStockBox" style="display:none;">
         <div class="sw-stock-head" id="swStockHead"></div>
         <div class="sw-stock-thumbs" id="swStockThumbs"></div>
@@ -12807,6 +12845,11 @@ function lgPoolGc() {
     var stk = JSON.parse(localStorage.getItem('signal_sw_photo_stock') || '{}');
     (stk.photos || []).forEach(function(p) { if (typeof p === 'string' && p.indexOf('pool:') === 0) used[p.slice(5)] = true; });
   } catch (e) {}
+  try {
+    var csx = JSON.parse(localStorage.getItem('shellCourses') || '[]');
+    csx.forEach(function(c) { (c.photos || []).forEach(function(p) { if (typeof p === 'string' && p.indexOf('pool:') === 0) used[p.slice(5)] = true; }); });
+  } catch (e) {}
+  if (typeof csDraft !== 'undefined' && csDraft && csDraft.photos) csDraft.photos.forEach(function(p) { if (typeof p === 'string' && p.indexOf('pool:') === 0) used[p.slice(5)] = true; });
   var changed = false;
   Object.keys(lgPhotos).forEach(function(id) { if (!used[id]) { delete lgPhotos[id]; changed = true; } });
   if (changed) lgSavePhotos();
@@ -14068,5 +14111,704 @@ function an7InjectCards() {
 })();
 
 </script><datalist id="rnEventList"></datalist>
+
+<script>
+
+// ===== COURSE BUILDER EVOLUTION proto8 (original implementation) =====
+CS_PIECES.straightH = { label: 'ストレート½', len: 27, turn: 0, color: '#d8d8dc' };
+CS_PIECES.straightQ = { label: 'ストレート¼', len: 13.5, turn: 0, color: '#c9c9ce' };
+CS_PIECES.straightE = { label: 'ストレート⅛', len: 6.75, turn: 0, color: '#bdbdc2' };
+CS_PIECES.waveRev = { label: 'ウェーブ（逆）', len: 54, turn: 0, color: '#1f8a80' };
+CS_PIECES.bankIn20 = { label: 'バンク入 20°', len: 54, turn: 0, color: '#cc6600' };
+CS_PIECES.bankOut20 = { label: 'バンク出 20°', len: 54, turn: 0, color: '#e08a2e' };
+CS_PIECES.bankIn30 = { label: 'バンク入 30°', len: 54, turn: 0, color: '#b35900' };
+CS_PIECES.bankOut30 = { label: 'バンク出 30°', len: 54, turn: 0, color: '#d67d1f' };
+CS_PIECES.bankEndL = { label: 'バンクエンド左', len: 152, turn: -160, color: '#FF7A00' };
+CS_PIECES.bankEndR = { label: 'バンクエンド右', len: 152, turn: 160, color: '#FF7A00' };
+CS_PIECES.burnL = { label: 'バーニング左', len: 108, turn: 0, shift: 11.5, color: '#e0b13c' };
+CS_PIECES.burnR = { label: 'バーニング右', len: 108, turn: 0, shift: -11.5, color: '#e0b13c' };
+CS_PIECES.laneJump = { label: 'LCジャンプ', len: 108, turn: 0, shift: -11.5, color: '#4fa8b8' };
+CS_PIECES.slopeUp.h = 110;
+CS_PIECES.slopeDown.h = -110;
+CS_PIECES.bankL.label = 'バンクカーブ左';
+CS_PIECES.bankR.label = 'バンクカーブ右';
+var CS_PALETTE_BASIC = ['straight', 'straightH', 'straightQ', 'straightE', 'curveL', 'curveR', 'digitalL', 'digitalR', 'wave', 'waveRev', 'laneL', 'laneR', 'laneJump'];
+var CS_PALETTE_SECTION = ['slopeUp', 'slopeDown', 'dragon', 'eiger', 'tabletop', 'bouncingA', 'bouncingB', 'brun', 'bridge', 'burnL', 'burnR'];
+var CS_PALETTE_BANK = ['bankIn20', 'bankOut20', 'bankIn30', 'bankOut30', 'bankL', 'bankR', 'bankEndL', 'bankEndR'];
+CS_PALETTE = CS_PALETTE_BASIC.concat(CS_PALETTE_SECTION, CS_PALETTE_BANK);
+var csUndoStack = [], csRedoStack = [], csSel = -1, csInsertMode = false, csAddAtStart = false, csSuggestCache = null;
+var CS_MY_KEY = 'shellMySections';
+function csResetEditState() { csUndoStack = []; csRedoStack = []; csSel = -1; csInsertMode = false; csAddAtStart = false; csSuggestCache = null; }
+function csMySections() { try { var a = JSON.parse(localStorage.getItem(CS_MY_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function csSaveMySections(a) { try { localStorage.setItem(CS_MY_KEY, JSON.stringify(a)); } catch (e) {} }
+function csDefH(code) { var p = CS_PIECES[code]; return p && p.h ? p.h : 0; }
+function csHeightsOf(d) { var hs = []; (d.pieces || []).forEach(function(c, i) { hs.push(d.heights && d.heights[i] != null ? d.heights[i] : csDefH(c)); }); return hs; }
+function csSetPieces(np, nh) {
+  csUndoStack.push({ pieces: csDraft.pieces.slice(), heights: csHeightsOf(csDraft) });
+  if (csUndoStack.length > 60) csUndoStack.shift();
+  csRedoStack = [];
+  csDraft.pieces = np; csDraft.heights = nh;
+  csSel = -1; csInsertMode = false;
+  csRenderBuilder();
+}
+function csPaletteGroup(title, codes) {
+  return '<div class="cs-pal-title">' + title + '</div><div class="cs-palette">' + codes.map(function(code) { return '<button type="button" class="cs-pbtn" onclick="csAddPiece(\'' + code + '\')">' + CS_PIECES[code].label + '</button>'; }).join('') + '</div>';
+}
+function csPaletteHtml() { return csPaletteGroup('基本', CS_PALETTE_BASIC) + csPaletteGroup('セクション', CS_PALETTE_SECTION) + csPaletteGroup('バンク', CS_PALETTE_BANK); }
+// ---- geometry (height-aware, continuable) ----
+function csStepState(x, y, h, code) {
+  var p = CS_PIECES[code];
+  if (!p) return { x: x, y: y, h: h };
+  var steps = Math.max(2, Math.round(p.len / 6));
+  if (p.turn) steps = Math.max(4, Math.round(Math.abs(p.turn) / 5));
+  var bx = x, by = y;
+  for (var i = 1; i <= steps; i++) {
+    var hh = h + (p.turn || 0) * (i - 0.5) / steps;
+    var rad = hh * Math.PI / 180;
+    bx += Math.cos(rad) * (p.len / steps);
+    by += Math.sin(rad) * (p.len / steps);
+  }
+  var px = bx, py = by;
+  if (p.shift) { var nrad = (h - 90) * Math.PI / 180; px = bx + Math.cos(nrad) * p.shift; py = by + Math.sin(nrad) * p.shift; }
+  return { x: px, y: py, h: h + (p.turn || 0) };
+}
+function csSimulate(pieces, heights, startState) {
+  var x = startState ? startState.x : 0, y = startState ? startState.y : 0, h = startState ? startState.h : 0, z = startState ? startState.z : 0, total = 0;
+  var segs = [];
+  var minX = x, maxX = x, minY = y, maxY = y;
+  function track(px, py) { if (px < minX) minX = px; if (px > maxX) maxX = px; if (py < minY) minY = py; if (py > maxY) maxY = py; }
+  (pieces || []).forEach(function(code, idx) {
+    var p = CS_PIECES[code];
+    if (!p) return;
+    var steps = Math.max(2, Math.round(p.len / 6));
+    if (p.turn) steps = Math.max(4, Math.round(Math.abs(p.turn) / 5));
+    var bx = x, by = y;
+    var pts = [[x, y]];
+    for (var i = 1; i <= steps; i++) {
+      var t = i / steps;
+      var hh = h + (p.turn || 0) * (i - 0.5) / steps;
+      var rad = hh * Math.PI / 180;
+      bx += Math.cos(rad) * (p.len / steps);
+      by += Math.sin(rad) * (p.len / steps);
+      var px = bx, py = by;
+      if (p.shift) {
+        var off = p.shift * (0.5 - 0.5 * Math.cos(Math.PI * t));
+        var nrad = (h - 90) * Math.PI / 180;
+        px = bx + Math.cos(nrad) * off;
+        py = by + Math.sin(nrad) * off;
+      }
+      pts.push([px, py]);
+      track(px, py);
+    }
+    x = pts[pts.length - 1][0];
+    y = pts[pts.length - 1][1];
+    h += (p.turn || 0);
+    z += (heights && heights[idx] != null) ? heights[idx] : csDefH(code);
+    total += p.len;
+    segs.push({ code: code, pts: pts });
+  });
+  var dist = Math.sqrt(x * x + y * y);
+  var hMod = ((h % 360) + 360) % 360;
+  var closed = !startState && (pieces || []).length >= 4 && dist <= 20 && hMod === 0 && z === 0;
+  return { segs: segs, total: total, endDist: dist, heading: hMod, closed: closed, bbox: { minX: minX, maxX: maxX, minY: minY, maxY: maxY }, endX: x, endY: y, endZ: z, endH: h };
+}
+function csSvgHtml(pieces, heights, ghost) {
+  if (!pieces || !pieces.length) return '<div class="cs-nosvg">ピースを置くと、ここにレイアウトが描かれます</div>';
+  var sim = csSimulate(pieces, heights);
+  var ghostSegs = [];
+  if (ghost && ghost.pieces && ghost.pieces.length) {
+    ghostSegs = csSimulate(ghost.pieces, ghost.heights, { x: sim.endX, y: sim.endY, h: sim.endH, z: sim.endZ }).segs;
+  }
+  var minX = sim.bbox.minX, maxX = sim.bbox.maxX, minY = sim.bbox.minY, maxY = sim.bbox.maxY;
+  ghostSegs.forEach(function(s) { s.pts.forEach(function(p) { if (p[0] < minX) minX = p[0]; if (p[0] > maxX) maxX = p[0]; if (p[1] < minY) minY = p[1]; if (p[1] > maxY) maxY = p[1]; }); });
+  var pad = 26;
+  var w = (maxX - minX) + pad * 2;
+  var hgt = (maxY - minY) + pad * 2;
+  var parts = ['<svg viewBox="' + (minX - pad) + ' ' + (minY - pad) + ' ' + w + ' ' + hgt + '" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">'];
+  ghostSegs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="#9a9aa2" stroke-width="34.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 8" opacity="0.45"/>');
+  });
+  sim.segs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="' + CS_PIECES[s.code].color + '" stroke-width="34.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>');
+  });
+  sim.segs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>');
+  });
+  parts.push('<circle cx="0" cy="0" r="10" fill="#30d158"/>');
+  parts.push('<text x="0" y="-18" fill="#30d158" font-size="17" text-anchor="middle" font-weight="bold">スタート</text>');
+  if (!ghostSegs.length) {
+    var last = sim.segs[sim.segs.length - 1];
+    var ep = last.pts[last.pts.length - 1];
+    parts.push('<circle cx="' + ep[0].toFixed(1) + '" cy="' + ep[1].toFixed(1) + '" r="8" fill="' + (sim.closed ? '#30d158' : '#ffd60a') + '"/>');
+  }
+  parts.push('</svg>');
+  return parts.join('');
+}
+// ---- closure suggestion (breadth-first, own search) ----
+var CS_SUGGEST_CANDS = ['straight', 'straightH', 'straightQ', 'straightE', 'curveL', 'curveR', 'slopeUp', 'slopeDown'];
+function csSuggest(pieces, heights) {
+  var sim = csSimulate(pieces, heights);
+  if (sim.closed) return { closed: true };
+  function key(x, y, h, z) { return Math.round(x / 3) + ',' + Math.round(y / 3) + ',' + (((h % 360) + 360) % 360) + ',' + z; }
+  var visited = {};
+  visited[key(sim.endX, sim.endY, sim.endH, sim.endZ)] = true;
+  var queue = [{ x: sim.endX, y: sim.endY, h: sim.endH, z: sim.endZ, seq: [] }];
+  var guard = 0;
+  while (queue.length && guard++ < 25000) {
+    var cur = queue.shift();
+    if (cur.seq.length >= 6) continue;
+    for (var ci = 0; ci < CS_SUGGEST_CANDS.length; ci++) {
+      var code = CS_SUGGEST_CANDS[ci];
+      var ns = csStepState(cur.x, cur.y, cur.h, code);
+      var nz = cur.z + csDefH(code);
+      var nh = ((ns.h % 360) + 360) % 360;
+      var dist = Math.sqrt(ns.x * ns.x + ns.y * ns.y);
+      var seq2 = cur.seq.concat([code]);
+      if (dist <= 10 && nh === 0 && nz === 0 && seq2.length >= 1) return { pieces: seq2 };
+      var k = key(ns.x, ns.y, ns.h, nz);
+      if (!visited[k]) { visited[k] = true; queue.push({ x: ns.x, y: ns.y, h: ns.h, z: nz, seq: seq2 }); }
+    }
+  }
+  return null;
+}
+function csApplySuggest() {
+  if (!csDraft || !csSuggestCache) return;
+  var pieces = csDraft.pieces.slice();
+  var heights = csHeightsOf(csDraft);
+  csSuggestCache.pieces.forEach(function(c) { pieces.push(c); heights.push(csDefH(c)); });
+  csSetPieces(pieces, heights);
+}
+// ---- builder render (selection / suggestion / heights / my sets) ----
+function csRenderBuilder() {
+  if (!csDraft) return;
+  var heights = csHeightsOf(csDraft);
+  var sugg = csDraft.pieces.length >= 3 ? csSuggest(csDraft.pieces, heights) : null;
+  csSuggestCache = sugg && sugg.pieces ? sugg : null;
+  var svgBox = document.getElementById('csSvgBox');
+  if (!svgBox) return;
+  svgBox.innerHTML = csSvgHtml(csDraft.pieces, heights, csSuggestCache ? { pieces: csSuggestCache.pieces, heights: csSuggestCache.pieces.map(function(c) { return csDefH(c); }) } : null);
+  var sim = csSimulate(csDraft.pieces, heights);
+  var sizeW = (sim.bbox.maxX - sim.bbox.minX) / 100, sizeH = (sim.bbox.maxY - sim.bbox.minY) / 100;
+  var statsHtml = '全長 約 ' + (sim.total / 100).toFixed(2) + ' m／ピース ' + csDraft.pieces.length + ' 個' +
+    (csDraft.pieces.length ? '／広さ 約 ' + sizeW.toFixed(1) + ' × ' + sizeH.toFixed(1) + ' m' : '') +
+    (sim.endZ !== 0 ? '／高さのずれ ' + sim.endZ + 'mm' : '');
+  if (sim.closed) statsHtml += '<br><span class="cs-closed">✓ 一周つながりました</span>';
+  else if (csSuggestCache) statsHtml += '<br>あと少し：' + csSuggestCache.pieces.map(function(c) { return rnEsc(CS_PIECES[c].label); }).join(' → ') + ' を足すと一周します<button type="button" class="cs-sugbtn" onclick="csApplySuggest()">提案どおりに足す</button>';
+  else if (csDraft.pieces.length >= 4) statsHtml += '<br>一周まで：位置のずれ 約 ' + (sim.endDist / 100).toFixed(2) + ' m／向きのずれ ' + sim.heading + '°';
+  var stats = document.getElementById('csBuildStats');
+  if (stats) stats.innerHTML = statsHtml;
+  var chips = document.getElementById('csSeqChips');
+  if (chips) chips.innerHTML = csDraft.pieces.length ? csDraft.pieces.map(function(cd, i) {
+    var hb = heights[i] ? ' ' + (heights[i] > 0 ? '↑' : '↓') + Math.abs(heights[i]) : '';
+    return '<span class="cs-seq' + (i === csSel ? ' sel' : '') + '" onclick="csSelectPiece(' + i + ')">' + (i + 1) + '.' + rnEsc(CS_PIECES[cd].label) + hb + '</span>';
+  }).join('') : '<span class="cs-note">まだピースがありません</span>';
+  var bar = document.getElementById('csEditBar');
+  if (bar) {
+    if (csSel >= 0 && csDraft.pieces[csSel]) {
+      var code = csDraft.pieces[csSel];
+      bar.innerHTML = '<div class="cs-editbar"><div class="cs-eb-title">' + (csSel + 1) + '番目：' + rnEsc(CS_PIECES[code].label) + '（高さ ' + heights[csSel] + 'mm）</div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csToggleInsert()">' + (csInsertMode ? '差し替えに戻す' : '前に追加する') + '</button><button type="button" class="cs-ebtn" style="color:#ff6961" onclick="csDeleteSelected()">このピースを削除</button></div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csSetSelHeight(110)">高さ +110</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(0)">高さ 0</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(-110)">高さ −110</button></div>' +
+        '<div class="cs-note">' + (csInsertMode ? 'パレットをタップすると、このピースの前に追加されます。' : 'パレットをタップすると、このピースと差し替わります。') + '</div></div>';
+    } else if (csDraft.pieces.length) {
+      bar.innerHTML = '<div class="cs-note">番号チップをタップすると、そのピースを選んで差し替え・削除・高さ変更ができます。</div>';
+    } else bar.innerHTML = '';
+  }
+  var tg = document.getElementById('csAddTargetBtn');
+  if (tg) tg.textContent = '追加先：' + (csAddAtStart ? 'はじめ' : 'おわり');
+  csRenderMySets();
+}
+function csRenderMySets() {
+  var row = document.getElementById('csMySetRow');
+  if (!row) return;
+  var a = csMySections();
+  row.innerHTML = a.length ? a.map(function(m) { return '<button type="button" class="cs-prebtn" onclick="csApplyMySet(\'' + m.id + '\')">' + rnEsc(m.name) + '（' + m.pieces.length + '）</button><button type="button" class="cs-mydel" onclick="csDeleteMySet(\'' + m.id + '\')">✕</button>'; }).join('') : '<span class="cs-note">まだありません</span>';
+}
+function csSaveMySet() {
+  if (!csDraft || !csDraft.pieces.length) { alert('ピースを置いてから保存してください'); return; }
+  var name = prompt('マイセットの名前', 'マイセット');
+  if (!name) return;
+  var a = csMySections();
+  a.push({ id: 'ms' + Date.now(), name: name, pieces: csDraft.pieces.slice(), heights: csHeightsOf(csDraft) });
+  csSaveMySections(a);
+  csRenderBuilder();
+}
+function csApplyMySet(id) {
+  if (!csDraft) return;
+  var ms = null;
+  csMySections().forEach(function(m) { if (m.id === id) ms = m; });
+  if (!ms) return;
+  var pieces = csDraft.pieces.slice();
+  var heights = csHeightsOf(csDraft);
+  ms.pieces.forEach(function(c, i) { pieces.push(c); heights.push(ms.heights && ms.heights[i] != null ? ms.heights[i] : csDefH(c)); });
+  csSetPieces(pieces, heights);
+}
+function csDeleteMySet(id) {
+  if (!confirm('このマイセットを消しますか？')) return;
+  csSaveMySections(csMySections().filter(function(m) { return m.id !== id; }));
+  csRenderBuilder();
+}
+// ---- editing operations ----
+function csAddPiece(code) {
+  if (!csDraft) return;
+  var pieces = csDraft.pieces.slice();
+  var heights = csHeightsOf(csDraft);
+  var sel = csSel, ins = csInsertMode;
+  if (sel >= 0 && sel < pieces.length) {
+    if (ins) { pieces.splice(sel, 0, code); heights.splice(sel, 0, csDefH(code)); }
+    else { pieces[sel] = code; heights[sel] = csDefH(code); }
+    csSetPieces(pieces, heights);
+    csSel = ins ? sel + 1 : sel;
+    csInsertMode = ins;
+    csRenderBuilder();
+    return;
+  }
+  if (csAddAtStart) { pieces.unshift(code); heights.unshift(csDefH(code)); }
+  else { pieces.push(code); heights.push(csDefH(code)); }
+  csSetPieces(pieces, heights);
+}
+function csAddPreset(i) {
+  if (!csDraft) return;
+  var add = CS_PRESETS[i].pieces;
+  var pieces = csDraft.pieces.slice();
+  var heights = csHeightsOf(csDraft);
+  if (csAddAtStart) {
+    pieces = add.concat(pieces);
+    heights = add.map(function(c) { return csDefH(c); }).concat(heights);
+  } else {
+    add.forEach(function(c) { pieces.push(c); heights.push(csDefH(c)); });
+  }
+  csSetPieces(pieces, heights);
+}
+function csUndo() {
+  if (!csDraft || !csUndoStack.length) return;
+  csRedoStack.push({ pieces: csDraft.pieces.slice(), heights: csHeightsOf(csDraft) });
+  var s = csUndoStack.pop();
+  csDraft.pieces = s.pieces; csDraft.heights = s.heights;
+  csSel = -1; csInsertMode = false;
+  csRenderBuilder();
+}
+function csRedo() {
+  if (!csDraft || !csRedoStack.length) return;
+  csUndoStack.push({ pieces: csDraft.pieces.slice(), heights: csHeightsOf(csDraft) });
+  var s = csRedoStack.pop();
+  csDraft.pieces = s.pieces; csDraft.heights = s.heights;
+  csSel = -1; csInsertMode = false;
+  csRenderBuilder();
+}
+function csUndoPiece() { csUndo(); }
+function csClearPieces() { if (!csDraft) return; if (!confirm('ピースを全部消しますか？')) return; csSetPieces([], []); }
+function csSelectPiece(i) { csSel = (csSel === i) ? -1 : i; csRenderBuilder(); }
+function csDeleteSelected() {
+  if (!csDraft || csSel < 0) return;
+  var pieces = csDraft.pieces.slice();
+  var heights = csHeightsOf(csDraft);
+  pieces.splice(csSel, 1); heights.splice(csSel, 1);
+  csSetPieces(pieces, heights);
+}
+function csSetSelHeight(v) {
+  if (!csDraft || csSel < 0) return;
+  var heights = csHeightsOf(csDraft);
+  heights[csSel] = v;
+  var sel = csSel;
+  csSetPieces(csDraft.pieces.slice(), heights);
+  csSel = Math.min(sel, csDraft.pieces.length - 1);
+  csRenderBuilder();
+}
+function csToggleTarget() { csAddAtStart = !csAddAtStart; csRenderBuilder(); }
+function csToggleInsert() { csInsertMode = !csInsertMode; csRenderBuilder(); }
+// ---- course form lifecycle ----
+function csNewCourse() {
+  var t = new Date();
+  csEditId = null;
+  csDraft = { name: (t.getMonth() + 1) + '/' + t.getDate() + ' のコース', kind: '公式大会', venue: '', laps: 3, pieces: [], heights: [], photos: [], danger: '', memo: '', lengthManual: '' };
+  csResetEditState();
+  renderCourses();
+}
+function csEditCourse(id) {
+  var c = csCourseById(id);
+  if (!c) return;
+  csEditId = id;
+  csDraft = JSON.parse(JSON.stringify(c));
+  csDraft.heights = csHeightsOf(csDraft);
+  csResetEditState();
+  renderCourses();
+  var form = document.querySelector('.cs-form');
+  if (form && form.scrollIntoView) { try { form.scrollIntoView({ block: 'start' }); } catch (e) {} }
+}
+function csCancelForm() { csDraft = null; csEditId = null; csResetEditState(); renderCourses(); }
+
+// ---- overridden: course form / card / save (proto6 sources, edited) ----
+function csFormHtml() {
+  var c = csDraft;
+  var kindOpts = CS_KINDS.map(function(k) { return '<option value="' + k + '"' + (c.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
+  var h = '<div class="cs-form"><h3>' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3>';
+  h += '<div class="cs-frow"><label>コース名</label><input id="csFName" type="text" value="' + rnEsc(c.name || '') + '"></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>種別</label><select id="csFKind">' + kindOpts + '</select></div>';
+  h += '<div class="cs-frow"><label>場所・会場</label><input id="csFVenue" type="text" value="' + rnEsc(c.venue || '') + '"></div></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>周回数（1レース）</label><input id="csFLaps" type="number" inputmode="numeric" value="' + (c.laps || 3) + '"></div>';
+  h += '<div class="cs-frow"><label>全長 手入力（m・ピースがないとき）</label><input id="csFLengthManual" type="number" step="0.1" inputmode="decimal" value="' + (c.lengthManual === '' || c.lengthManual == null ? '' : c.lengthManual) + '"></div></div>';
+  h += '<div class="cs-frow"><label>レイアウト（スタートから順にピースをタップ）</label>';
+  h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
+  h += csPaletteHtml();
+  h += '<div class="cs-presets">' + CS_PRESETS.map(function(p, i) { return '<button type="button" class="cs-prebtn" onclick="csAddPreset(' + i + ')">' + p.label + '</button>'; }).join('') + '</div>';
+  h += '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csUndo()">↩ 戻す</button><button type="button" class="cs-ebtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ebtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ebtn" onclick="csClearPieces()">全部消す</button></div>';
+  h += '<div class="cs-seqwrap" id="csSeqChips"></div>';
+  h += '<div id="csEditBar"></div>';
+  h += '<div class="cs-frow"><label>マイセット（自分の組み合わせ）</label><div class="cs-presets" id="csMySetRow"></div><button type="button" class="cs-ebtn" style="width:100%" onclick="csSaveMySet()">今の並びをマイセットに保存</button></div>';
+  h += '<div class="cs-note">全長はピースの標準長（ストレート54cm・カーブ45°など）からの目安です。特殊セクションは実物と異なる場合があります。高さはスロープで自動で±110mm付き、選んだピースごとに変えられます。</div></div>';
+  h += '<div class="cs-frow"><label>写真（レイアウト図・コース全体など）</label><div class="cs-photos" id="csPhotoRow"></div>';
+  h += '<button type="button" class="cs-ebtn" style="width:100%" onclick="document.getElementById(\'csPhotoInput\').click()">写真を追加</button>';
+  h += '<input type="file" id="csPhotoInput" accept="image/*" style="display:none" onchange="csHandlePhoto(this)"></div>';
+  h += '<div class="cs-frow"><label>危険ポイント</label><textarea id="csFDanger" rows="2">' + rnEsc(c.danger || '') + '</textarea></div>';
+  h += '<div class="cs-frow"><label>メモ</label><textarea id="csFMemo" rows="2">' + rnEsc(c.memo || '') + '</textarea></div>';
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn primary" onclick="csSaveForm()">保存</button><button type="button" class="cs-btn" onclick="csCancelForm()">キャンセル</button></div>';
+  h += '</div>';
+  return h;
+}
+
+function csCardHtml(c) {
+  var openCls = csOpen[c.id] ? ' open' : '';
+  var st = csCourseStats(c);
+  var h = '<div class="cs-card' + openCls + '">';
+  h += '<button type="button" class="cs-head" onclick="csToggle(\'' + rnEsc(c.id) + '\')">';
+  h += '<span class="cs-name">' + rnEsc(c.name) + '</span>';
+  h += '<span class="cs-kind">' + rnEsc(c.kind || '') + '</span>';
+  h += '<span class="cs-len">' + (c.lengthM ? '約' + c.lengthM.toFixed(2) + 'm' : '全長未設定') + '</span></button>';
+  h += '<div class="cs-body">';
+  if (c.pieces && c.pieces.length) h += '<div class="cs-svgbox">' + csSvgHtml(c.pieces, c.heights) + '</div>';
+  var kv = [];
+  if (c.venue) kv.push('場所：' + rnEsc(c.venue));
+  kv.push('レーン：3');
+  if (c.laps) kv.push('周回数：' + c.laps);
+  if (c.heights && c.heights.some(function(x) { return x; })) kv.push('高低差つき');
+  if (c.lengthM) kv.push('1周：約' + c.lengthM.toFixed(2) + 'm');
+  h += '<div class="cs-kv">' + kv.join('／') + '</div>';
+  if (c.sections) {
+    var chips = Object.keys(c.sections).filter(function(k) { return CS_PIECES[k]; }).map(function(k) { return '<span class="cs-secchip">' + rnEsc(CS_PIECES[k].label) + ' ×' + c.sections[k] + '</span>'; });
+    if (chips.length) h += '<div class="cs-secchips">' + chips.join('') + '</div>';
+  }
+  if (c.danger) h += '<div class="cs-kv">⚠ 危険ポイント：' + rnEsc(c.danger) + '</div>';
+  if (c.memo) h += '<div class="cs-kv">メモ：' + rnEsc(c.memo) + '</div>';
+  if (c.photos && c.photos.length) {
+    h += '<div class="cs-photos">' + c.photos.map(function(p) { return '<img src="' + rnEsc(rnPhotoSrc(p)) + '" alt="" onclick="swViewPhoto(\'' + rnEsc(p) + '\')">'; }).join('') + '</div>';
+  }
+  h += '<div class="cs-statsbox">このコースの走行：' + st.count + ' 件';
+  if (st.best != null) h += '／ベスト ' + ((typeof rnFmtMs === 'function') ? rnFmtMs(st.best) : (st.best / 1000).toFixed(3)) + ' 秒';
+  if (st.judged) h += '／完走率 ' + (st.fin / st.judged * 100).toFixed(1) + '%（' + st.fin + '/' + st.judged + '）';
+  h += '</div>';
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn" onclick="csEditCourse(\'' + rnEsc(c.id) + '\')">編集</button>';
+  h += '<button type="button" class="cs-btn" style="color:#ff6961" onclick="csDeleteCourse(\'' + rnEsc(c.id) + '\')">削除</button></div>';
+  h += '</div></div>';
+  return h;
+}
+
+function csSaveForm() {
+  if (!csDraft) return;
+  var name = document.getElementById('csFName').value.trim();
+  if (!name) { alert('コース名を入れてください'); return; }
+  csDraft.name = name;
+  csDraft.kind = document.getElementById('csFKind').value;
+  csDraft.venue = document.getElementById('csFVenue').value.trim();
+  csDraft.laps = parseInt(document.getElementById('csFLaps').value, 10) || 3;
+  csDraft.danger = document.getElementById('csFDanger').value.trim();
+  csDraft.memo = document.getElementById('csFMemo').value.trim();
+  var lm = parseFloat(document.getElementById('csFLengthManual').value);
+  csDraft.lengthManual = isNaN(lm) ? '' : lm;
+  csDraft.heights = csHeightsOf(csDraft);
+  var sim = csSimulate(csDraft.pieces, csDraft.heights);
+  csDraft.lengthM = csDraft.pieces.length ? Math.round(sim.total) / 100 : (csDraft.lengthManual === '' ? null : csDraft.lengthManual);
+  csDraft.sections = {};
+  csDraft.pieces.forEach(function(cd) { csDraft.sections[cd] = (csDraft.sections[cd] || 0) + 1; });
+  csLoad();
+  if (csEditId) {
+    var target = null;
+    csCourses.forEach(function(c) { if (c.id === csEditId) target = c; });
+    if (target) Object.keys(csDraft).forEach(function(k) { target[k] = csDraft[k]; });
+  } else {
+    csDraft.id = 'c' + Date.now() + Math.floor(Math.random() * 999);
+    csDraft.createdAt = Date.now();
+    csCourses.push(csDraft);
+  }
+  if (!csSave()) { alert('保存できませんでした（容量不足の可能性）'); return; }
+  csDraft = null; csEditId = null;
+  renderCourses();
+}
+
+</script>
+
+<script>
+
+// ===== LAUNCHER COURSE CARD + REMOTE LAP proto9 =====
+function shellGoCourse() {
+  shellGo('runs');
+  if (typeof runsShowView === 'function') runsShowView('courses');
+}
+var SHELL_REMOTE_KEY = 'shellRemoteLapOn';
+function shellRemoteEnabled() { try { return localStorage.getItem(SHELL_REMOTE_KEY) === '1'; } catch (e) { return false; } }
+function shellToggleRemote() {
+  var on = !shellRemoteEnabled();
+  try { localStorage.setItem(SHELL_REMOTE_KEY, on ? '1' : '0'); } catch (e) {}
+  shellSyncRemoteBtn();
+}
+function shellSyncRemoteBtn() {
+  var b = document.getElementById('swRemoteBtn');
+  if (!b) return;
+  var on = shellRemoteEnabled();
+  b.textContent = '🎮 リモコンラップ：' + (on ? 'ON' : 'OFF');
+  b.classList.toggle('on', on);
+  var hint = document.getElementById('swRemoteHint');
+  if (hint) hint.style.display = on ? '' : 'none';
+}
+// アプリ版の器からは、音量キー検知のときに window.shellRemoteLap() を呼ぶ想定の受け口。
+// Web版ではキー入力（Enter / Space）から同じ関数に入る。
+function shellRemoteLap() {
+  if (!shellRemoteEnabled()) return false;
+  if (typeof swRunning !== 'undefined' && swRunning) {
+    if (typeof swLap === 'function') { swLap(); return true; }
+    return false;
+  }
+  if (typeof swSignalBusy !== 'undefined' && swSignalBusy) return false;
+  if (typeof swStart === 'function') { swStart(); return true; }
+  return false;
+}
+document.addEventListener('keydown', function(e) {
+  if (!shellRemoteEnabled()) return;
+  if (!document.body || !document.body.classList.contains('shell-at-sw')) return;
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    shellRemoteLap();
+  }
+});
+shellSyncRemoteBtn();
+
+</script>
+
+<script>
+
+// ===== COURSE VIEWPOINTS (top + N/E/S/W side elevations) proto10 =====
+var csView = 'top';
+var csCardViews = {};
+var CS_VIEWS = [['top', '真上'], ['n', '北から'], ['e', '東から'], ['s', '南から'], ['w', '西から']];
+function csViewBtnsHtml(kind, id) {
+  var cur = kind === 'b' ? csView : (csCardViews[id] || 'top');
+  var btns = CS_VIEWS.map(function(v) {
+    var oc = kind === 'b' ? "csSetView('" + v[0] + "')" : "csSetCardView('" + id + "','" + v[0] + "')";
+    return '<button type="button" class="cs-vbtn' + (cur === v[0] ? ' on' : '') + '" onclick="' + oc + '">' + v[1] + '</button>';
+  }).join('');
+  var cap = cur === 'top' ? '真上から（上が北）' : '真横から（高さは3倍に強調）';
+  return btns + '<span class="cs-viewcap">' + cap + '</span>';
+}
+function csSetView(v) { csView = v; csRenderBuilder(); }
+function csSetCardView(id, v) { csCardViews[id] = v; renderCourses(); }
+function csProject(view, x, y) {
+  if (view === 'n') return -x;
+  if (view === 's') return x;
+  if (view === 'e') return -y;
+  if (view === 'w') return y;
+  return x;
+}
+// height-aware simulation (points carry z in mm); superset of previous versions
+function csSimulate(pieces, heights, startState) {
+  var x = startState ? startState.x : 0, y = startState ? startState.y : 0, h = startState ? startState.h : 0, z = startState ? startState.z : 0, total = 0;
+  var segs = [];
+  var minX = x, maxX = x, minY = y, maxY = y;
+  function track(px, py) { if (px < minX) minX = px; if (px > maxX) maxX = px; if (py < minY) minY = py; if (py > maxY) maxY = py; }
+  (pieces || []).forEach(function(code, idx) {
+    var p = CS_PIECES[code];
+    if (!p) return;
+    var hi = (heights && heights[idx] != null) ? heights[idx] : csDefH(code);
+    var steps = Math.max(2, Math.round(p.len / 6));
+    if (p.turn) steps = Math.max(4, Math.round(Math.abs(p.turn) / 5));
+    var bx = x, by = y;
+    var pts = [[x, y, z]];
+    for (var i = 1; i <= steps; i++) {
+      var t = i / steps;
+      var hh = h + (p.turn || 0) * (i - 0.5) / steps;
+      var rad = hh * Math.PI / 180;
+      bx += Math.cos(rad) * (p.len / steps);
+      by += Math.sin(rad) * (p.len / steps);
+      var px = bx, py = by;
+      if (p.shift) {
+        var off = p.shift * (0.5 - 0.5 * Math.cos(Math.PI * t));
+        var nrad = (h - 90) * Math.PI / 180;
+        px = bx + Math.cos(nrad) * off;
+        py = by + Math.sin(nrad) * off;
+      }
+      pts.push([px, py, z + hi * t]);
+      track(px, py);
+    }
+    x = pts[pts.length - 1][0];
+    y = pts[pts.length - 1][1];
+    h += (p.turn || 0);
+    z += hi;
+    total += p.len;
+    segs.push({ code: code, pts: pts });
+  });
+  var dist = Math.sqrt(x * x + y * y);
+  var hMod = ((h % 360) + 360) % 360;
+  var closed = !startState && (pieces || []).length >= 4 && dist <= 20 && hMod === 0 && z === 0;
+  return { segs: segs, total: total, endDist: dist, heading: hMod, closed: closed, bbox: { minX: minX, maxX: maxX, minY: minY, maxY: maxY }, endX: x, endY: y, endZ: z, endH: h };
+}
+function csSideHtml(pieces, heights, view, ghost) {
+  if (!pieces || !pieces.length) return '<div class="cs-nosvg">ピースを置くと、ここにレイアウトが描かれます</div>';
+  var sim = csSimulate(pieces, heights);
+  var ghostSegs = [];
+  if (ghost && ghost.pieces && ghost.pieces.length) {
+    ghostSegs = csSimulate(ghost.pieces, ghost.heights, { x: sim.endX, y: sim.endY, h: sim.endH, z: sim.endZ }).segs;
+  }
+  var K = 0.3; // mm -> screen units with x3 exaggeration (z is mm, plan is cm)
+  function proj(p) { return [csProject(view, p[0], p[1]), -(p[2] * K)]; }
+  var all = [];
+  sim.segs.forEach(function(s) { s.pts.forEach(function(p) { all.push(proj(p)); }); });
+  ghostSegs.forEach(function(s) { s.pts.forEach(function(p) { all.push(proj(p)); }); });
+  var minH = Infinity, maxH = -Infinity, minV = 0, maxV = 0;
+  all.forEach(function(q) { if (q[0] < minH) minH = q[0]; if (q[0] > maxH) maxH = q[0]; if (q[1] < minV) minV = q[1]; if (q[1] > maxV) maxV = q[1]; });
+  var padH = 20, padTop = 26, padBot = 30;
+  var w = (maxH - minH) + padH * 2;
+  var hgt = (maxV - minV) + padTop + padBot;
+  var parts = ['<svg viewBox="' + (minH - padH) + ' ' + (minV - padTop) + ' ' + w + ' ' + hgt + '" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">'];
+  // height gridlines every 110mm
+  var zVals = [];
+  for (var zz = -330; zz <= 330; zz += 110) zVals.push(zz);
+  zVals.forEach(function(zv) {
+    var gy = -(zv * K);
+    if (gy < minV - padTop || gy > maxV + padBot) return;
+    parts.push('<line x1="' + (minH - padH) + '" y1="' + gy + '" x2="' + (maxH + padH) + '" y2="' + gy + '" stroke="' + (zv === 0 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.10)') + '" stroke-width="1"' + (zv === 0 ? ' stroke-dasharray="5 4"' : '') + '/>');
+    parts.push('<text x="' + (minH - padH + 2) + '" y="' + (gy - 3) + '" fill="#aeaeb2" font-size="11">' + (zv === 0 ? 'スタートの高さ' : zv + 'mm') + '</text>');
+  });
+  ghostSegs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { var q = proj(p); return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="#9a9aa2" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" opacity="0.5"/>');
+  });
+  sim.segs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { var q = proj(p); return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="' + CS_PIECES[s.code].color + '" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>');
+  });
+  var sp = proj(sim.segs[0].pts[0]);
+  parts.push('<circle cx="' + sp[0].toFixed(1) + '" cy="' + sp[1].toFixed(1) + '" r="6" fill="#30d158"/>');
+  parts.push('<text x="' + sp[0].toFixed(1) + '" y="' + (sp[1] - 12) + '" fill="#30d158" font-size="13" text-anchor="middle" font-weight="bold">スタート</text>');
+  parts.push('</svg>');
+  return parts.join('');
+}
+function csViewHtml(pieces, heights, ghost, view) {
+  if (!view || view === 'top') return csSvgHtml(pieces, heights, ghost);
+  return csSideHtml(pieces, heights, view, ghost);
+}
+
+// ---- overridden: builder render / course form / course card (edited current versions) ----
+function csRenderBuilder() {
+  if (!csDraft) return;
+  var heights = csHeightsOf(csDraft);
+  var sugg = csDraft.pieces.length >= 3 ? csSuggest(csDraft.pieces, heights) : null;
+  csSuggestCache = sugg && sugg.pieces ? sugg : null;
+  var svgBox = document.getElementById('csSvgBox');
+  if (!svgBox) return;
+  var vr = document.getElementById('csViewRow');
+  if (vr) vr.innerHTML = csViewBtnsHtml('b');
+  svgBox.innerHTML = csViewHtml(csDraft.pieces, heights, csSuggestCache ? { pieces: csSuggestCache.pieces, heights: csSuggestCache.pieces.map(function(c) { return csDefH(c); }) } : null, csView);
+  var sim = csSimulate(csDraft.pieces, heights);
+  var sizeW = (sim.bbox.maxX - sim.bbox.minX) / 100, sizeH = (sim.bbox.maxY - sim.bbox.minY) / 100;
+  var statsHtml = '全長 約 ' + (sim.total / 100).toFixed(2) + ' m／ピース ' + csDraft.pieces.length + ' 個' +
+    (csDraft.pieces.length ? '／広さ 約 ' + sizeW.toFixed(1) + ' × ' + sizeH.toFixed(1) + ' m' : '') +
+    (sim.endZ !== 0 ? '／高さのずれ ' + sim.endZ + 'mm' : '');
+  if (sim.closed) statsHtml += '<br><span class="cs-closed">✓ 一周つながりました</span>';
+  else if (csSuggestCache) statsHtml += '<br>あと少し：' + csSuggestCache.pieces.map(function(c) { return rnEsc(CS_PIECES[c].label); }).join(' → ') + ' を足すと一周します<button type="button" class="cs-sugbtn" onclick="csApplySuggest()">提案どおりに足す</button>';
+  else if (csDraft.pieces.length >= 4) statsHtml += '<br>一周まで：位置のずれ 約 ' + (sim.endDist / 100).toFixed(2) + ' m／向きのずれ ' + sim.heading + '°';
+  var stats = document.getElementById('csBuildStats');
+  if (stats) stats.innerHTML = statsHtml;
+  var chips = document.getElementById('csSeqChips');
+  if (chips) chips.innerHTML = csDraft.pieces.length ? csDraft.pieces.map(function(cd, i) {
+    var hb = heights[i] ? ' ' + (heights[i] > 0 ? '↑' : '↓') + Math.abs(heights[i]) : '';
+    return '<span class="cs-seq' + (i === csSel ? ' sel' : '') + '" onclick="csSelectPiece(' + i + ')">' + (i + 1) + '.' + rnEsc(CS_PIECES[cd].label) + hb + '</span>';
+  }).join('') : '<span class="cs-note">まだピースがありません</span>';
+  var bar = document.getElementById('csEditBar');
+  if (bar) {
+    if (csSel >= 0 && csDraft.pieces[csSel]) {
+      var code = csDraft.pieces[csSel];
+      bar.innerHTML = '<div class="cs-editbar"><div class="cs-eb-title">' + (csSel + 1) + '番目：' + rnEsc(CS_PIECES[code].label) + '（高さ ' + heights[csSel] + 'mm）</div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csToggleInsert()">' + (csInsertMode ? '差し替えに戻す' : '前に追加する') + '</button><button type="button" class="cs-ebtn" style="color:#ff6961" onclick="csDeleteSelected()">このピースを削除</button></div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csSetSelHeight(110)">高さ +110</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(0)">高さ 0</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(-110)">高さ −110</button></div>' +
+        '<div class="cs-note">' + (csInsertMode ? 'パレットをタップすると、このピースの前に追加されます。' : 'パレットをタップすると、このピースと差し替わります。') + '</div></div>';
+    } else if (csDraft.pieces.length) {
+      bar.innerHTML = '<div class="cs-note">番号チップをタップすると、そのピースを選んで差し替え・削除・高さ変更ができます。</div>';
+    } else bar.innerHTML = '';
+  }
+  var tg = document.getElementById('csAddTargetBtn');
+  if (tg) tg.textContent = '追加先：' + (csAddAtStart ? 'はじめ' : 'おわり');
+  csRenderMySets();
+}
+
+function csFormHtml() {
+  var c = csDraft;
+  var kindOpts = CS_KINDS.map(function(k) { return '<option value="' + k + '"' + (c.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
+  var h = '<div class="cs-form"><h3>' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3>';
+  h += '<div class="cs-frow"><label>コース名</label><input id="csFName" type="text" value="' + rnEsc(c.name || '') + '"></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>種別</label><select id="csFKind">' + kindOpts + '</select></div>';
+  h += '<div class="cs-frow"><label>場所・会場</label><input id="csFVenue" type="text" value="' + rnEsc(c.venue || '') + '"></div></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>周回数（1レース）</label><input id="csFLaps" type="number" inputmode="numeric" value="' + (c.laps || 3) + '"></div>';
+  h += '<div class="cs-frow"><label>全長 手入力（m・ピースがないとき）</label><input id="csFLengthManual" type="number" step="0.1" inputmode="decimal" value="' + (c.lengthManual === '' || c.lengthManual == null ? '' : c.lengthManual) + '"></div></div>';
+  h += '<div class="cs-frow"><label>レイアウト（スタートから順にピースをタップ）</label>';
+  h += '<div class="cs-viewrow" id="csViewRow"></div>';
+  h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
+  h += csPaletteHtml();
+  h += '<div class="cs-presets">' + CS_PRESETS.map(function(p, i) { return '<button type="button" class="cs-prebtn" onclick="csAddPreset(' + i + ')">' + p.label + '</button>'; }).join('') + '</div>';
+  h += '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csUndo()">↩ 戻す</button><button type="button" class="cs-ebtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ebtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ebtn" onclick="csClearPieces()">全部消す</button></div>';
+  h += '<div class="cs-seqwrap" id="csSeqChips"></div>';
+  h += '<div id="csEditBar"></div>';
+  h += '<div class="cs-frow"><label>マイセット（自分の組み合わせ）</label><div class="cs-presets" id="csMySetRow"></div><button type="button" class="cs-ebtn" style="width:100%" onclick="csSaveMySet()">今の並びをマイセットに保存</button></div>';
+  h += '<div class="cs-note">全長はピースの標準長（ストレート54cm・カーブ45°など）からの目安です。特殊セクションは実物と異なる場合があります。高さはスロープで自動で±110mm付き、選んだピースごとに変えられます。</div></div>';
+  h += '<div class="cs-frow"><label>写真（レイアウト図・コース全体など）</label><div class="cs-photos" id="csPhotoRow"></div>';
+  h += '<button type="button" class="cs-ebtn" style="width:100%" onclick="document.getElementById(\'csPhotoInput\').click()">写真を追加</button>';
+  h += '<input type="file" id="csPhotoInput" accept="image/*" style="display:none" onchange="csHandlePhoto(this)"></div>';
+  h += '<div class="cs-frow"><label>危険ポイント</label><textarea id="csFDanger" rows="2">' + rnEsc(c.danger || '') + '</textarea></div>';
+  h += '<div class="cs-frow"><label>メモ</label><textarea id="csFMemo" rows="2">' + rnEsc(c.memo || '') + '</textarea></div>';
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn primary" onclick="csSaveForm()">保存</button><button type="button" class="cs-btn" onclick="csCancelForm()">キャンセル</button></div>';
+  h += '</div>';
+  return h;
+}
+
+function csCardHtml(c) {
+  var openCls = csOpen[c.id] ? ' open' : '';
+  var st = csCourseStats(c);
+  var h = '<div class="cs-card' + openCls + '">';
+  h += '<button type="button" class="cs-head" onclick="csToggle(\'' + rnEsc(c.id) + '\')">';
+  h += '<span class="cs-name">' + rnEsc(c.name) + '</span>';
+  h += '<span class="cs-kind">' + rnEsc(c.kind || '') + '</span>';
+  h += '<span class="cs-len">' + (c.lengthM ? '約' + c.lengthM.toFixed(2) + 'm' : '全長未設定') + '</span></button>';
+  h += '<div class="cs-body">';
+  if (c.pieces && c.pieces.length) h += '<div class="cs-viewrow">' + csViewBtnsHtml('c', c.id) + '</div><div class="cs-svgbox">' + csViewHtml(c.pieces, c.heights, null, csCardViews[c.id] || 'top') + '</div>';
+  var kv = [];
+  if (c.venue) kv.push('場所：' + rnEsc(c.venue));
+  kv.push('レーン：3');
+  if (c.laps) kv.push('周回数：' + c.laps);
+  if (c.heights && c.heights.some(function(x) { return x; })) kv.push('高低差つき');
+  if (c.lengthM) kv.push('1周：約' + c.lengthM.toFixed(2) + 'm');
+  h += '<div class="cs-kv">' + kv.join('／') + '</div>';
+  if (c.sections) {
+    var chips = Object.keys(c.sections).filter(function(k) { return CS_PIECES[k]; }).map(function(k) { return '<span class="cs-secchip">' + rnEsc(CS_PIECES[k].label) + ' ×' + c.sections[k] + '</span>'; });
+    if (chips.length) h += '<div class="cs-secchips">' + chips.join('') + '</div>';
+  }
+  if (c.danger) h += '<div class="cs-kv">⚠ 危険ポイント：' + rnEsc(c.danger) + '</div>';
+  if (c.memo) h += '<div class="cs-kv">メモ：' + rnEsc(c.memo) + '</div>';
+  if (c.photos && c.photos.length) {
+    h += '<div class="cs-photos">' + c.photos.map(function(p) { return '<img src="' + rnEsc(rnPhotoSrc(p)) + '" alt="" onclick="swViewPhoto(\'' + rnEsc(p) + '\')">'; }).join('') + '</div>';
+  }
+  h += '<div class="cs-statsbox">このコースの走行：' + st.count + ' 件';
+  if (st.best != null) h += '／ベスト ' + ((typeof rnFmtMs === 'function') ? rnFmtMs(st.best) : (st.best / 1000).toFixed(3)) + ' 秒';
+  if (st.judged) h += '／完走率 ' + (st.fin / st.judged * 100).toFixed(1) + '%（' + st.fin + '/' + st.judged + '）';
+  h += '</div>';
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn" onclick="csEditCourse(\'' + rnEsc(c.id) + '\')">編集</button>';
+  h += '<button type="button" class="cs-btn" style="color:#ff6961" onclick="csDeleteCourse(\'' + rnEsc(c.id) + '\')">削除</button></div>';
+  h += '</div></div>';
+  return h;
+}
+
+</script>
 
 </body></html>
