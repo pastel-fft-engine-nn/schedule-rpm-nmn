@@ -2229,6 +2229,28 @@ body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn) { display:
 .cs-btn.primary { background: #FF7A00; }
 
 </style>
+<style id="an7Css">
+
+/* ===== ANALYSIS TABS + full run analysis proto7 ===== */
+.an-tabs { display: flex; overflow-x: auto; border-bottom: 2px solid #3a3a3c; margin-bottom: 14px; -webkit-overflow-scrolling: touch; }
+.an-tab { flex: 1 0 auto; padding: 10px 12px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; color: #aeaeb2; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.an-tab.on { color: #fff; border-bottom-color: #FF7A00; }
+.an-panel { display: none; }
+.an-panel.on { display: block; }
+.anf-panel { background: #1c1c1e; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.anf-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+.anf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.anf-f label { display: block; font-size: 11.5px; color: #aeaeb2; margin-bottom: 3px; }
+.anf-f select { width: 100%; box-sizing: border-box; background: #2c2c2e; color: #fff; border: 1px solid rgba(255,255,255,0.22); border-radius: 8px; padding: 8px; font-size: 14px; }
+.anf-reset { width: 100%; margin-top: 10px; padding: 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: #2c2c2e; color: #fff; font-size: 13.5px; cursor: pointer; }
+.an7-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 2px; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 13.5px; }
+.an7-row:last-child { border-bottom: none; }
+.an7-lab { color: #e8e8ea; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an7-val { color: #FF973D; font-weight: 700; white-space: nowrap; }
+.an7-val small { color: #aeaeb2; font-weight: 400; }
+.an7-warn { color: #ffd60a; }
+
+</style>
 </head>
 <body class="load-zero theme-classic shell-at-home">
 <div class="app-shell">
@@ -12920,6 +12942,8 @@ function rnRowHtml(rec) {
       }
     }
   }
+  if (rec.eventName) kv.push('大会：' + rnEsc(rec.eventName));
+  if (rec.round) kv.push('ラウンド：' + rnEsc(rec.round));
   if (loc) kv.push('場所：' + rnEsc(loc));
   kv.push('ラップ数：' + lapCount);
   if (sp.chassis) kv.push('シャーシ：' + rnEsc(sp.chassis));
@@ -13100,8 +13124,20 @@ document.addEventListener('change', function(e) {
 <div id="shellAnalysisWrap">
   <div class="an-inner">
     <div class="an-title">解析</div>
-    <div class="an-sub">貯まった記録から自動で集計します。ランキングは全て3.0V換算（推定値）です。</div>
-    <div id="anBody"></div>
+    <div class="an-sub">タブで分類しています。モーターのランキングは3.0V換算（推定値）。完走率・大会・負けパターンは、走行記録に付けた完走／アウトから集計します。</div>
+    <div class="an-tabs" id="anTabs">
+      <button type="button" class="an-tab" data-antab="motor" onclick="anShowTab('motor')">モーター</button>
+      <button type="button" class="an-tab" data-antab="loss" onclick="anShowTab('loss')">ロス・A/B</button>
+      <button type="button" class="an-tab" data-antab="rates" onclick="anShowTab('rates')">完走率</button>
+      <button type="button" class="an-tab" data-antab="event" onclick="anShowTab('event')">大会</button>
+      <button type="button" class="an-tab" data-antab="outs" onclick="anShowTab('outs')">負けパターン</button>
+    </div>
+    <div id="anPanelMotor" class="an-panel"></div>
+    <div id="anPanelLoss" class="an-panel"></div>
+    <div id="anPanelRates" class="an-panel"></div>
+    <div id="anPanelEvent" class="an-panel"></div>
+    <div id="anPanelOuts" class="an-panel"></div>
+    <div id="anBody" style="display:none"></div>
   </div>
 </div>
 
@@ -13690,5 +13726,347 @@ function csInjectCourseSelects() {
 })();
 
 </script>
+
+<script>
+
+// ===== ANALYSIS TABS + full run analysis (race-notes port) proto7 =====
+function an7Esc(s) { return (typeof rnEsc === 'function') ? rnEsc(s) : String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+var anTabCur = 'motor';
+try { anTabCur = localStorage.getItem('shellAnalysisTab') || 'motor'; } catch (e) {}
+var AN7_TABS = ['motor', 'loss', 'rates', 'event', 'outs'];
+if (AN7_TABS.indexOf(anTabCur) < 0) anTabCur = 'motor';
+function anShowTab(name) {
+  anTabCur = name;
+  try { localStorage.setItem('shellAnalysisTab', name); } catch (e) {}
+  document.querySelectorAll('#anTabs .an-tab').forEach(function(b) { b.classList.toggle('on', b.getAttribute('data-antab') === name); });
+  var panels = { motor: 'anPanelMotor', loss: 'anPanelLoss', rates: 'anPanelRates', event: 'anPanelEvent', outs: 'anPanelOuts' };
+  Object.keys(panels).forEach(function(k) { var p = document.getElementById(panels[k]); if (p) p.classList.toggle('on', k === name); });
+}
+function an7Distribute() {
+  var body = document.getElementById('anBody');
+  if (!body) return;
+  var pm = document.getElementById('anPanelMotor'), pl = document.getElementById('anPanelLoss');
+  if (pm) pm.innerHTML = '';
+  if (pl) pl.innerHTML = '';
+  var map = [['個体ランキング', pm], ['電圧の伸び', pm], ['ロスの推移', pl], ['条件別ロス', pl], ['A/B集計', pl]];
+  Array.prototype.slice.call(body.querySelectorAll('.an-sec')).forEach(function(sec) {
+    var h = sec.querySelector('.an-h');
+    var t = h ? h.textContent : '';
+    for (var i = 0; i < map.length; i++) {
+      if (t.indexOf(map[i][0]) >= 0) { if (map[i][1]) map[i][1].appendChild(sec); return; }
+    }
+    if (sec.parentNode) sec.parentNode.removeChild(sec);
+  });
+}
+// ---- run data ----
+function an7Outcomes() { try { return JSON.parse(localStorage.getItem('shellRunOutcomes') || '{}'); } catch (e) { return {}; } }
+function an7Bucket(ms) { var s = (ms || 0) / 1000; if (s < 10) return '10秒未満'; if (s < 15) return '10〜15秒'; if (s < 20) return '15〜20秒'; if (s < 25) return '20〜25秒'; if (s < 30) return '25〜30秒'; return '30秒以上'; }
+function an7Data() {
+  var oc = an7Outcomes();
+  var courses = {};
+  try { (JSON.parse(localStorage.getItem('shellCourses') || '[]')).forEach(function(c) { courses[c.id] = c.name; }); } catch (e) {}
+  return rnSwHistory().map(function(r) {
+    var o = oc[String(r.id)];
+    var sp = r.spec || {};
+    var motor = sp.motor || '（モーター未設定）';
+    var unit = r.unitName || '';
+    return {
+      rec: r, judged: !!o, finish: o === 'finish', out: o === 'out',
+      loc: (typeof rnLocName === 'function' ? rnLocName(r) : '') || '（場所なし）',
+      motorLabel: unit ? motor + ' × ' + unit : motor,
+      voltage: sp.voltage ? sp.voltage + 'V' : '（未設定）',
+      gear: sp.gear || '（未設定）',
+      tire: sp.tire ? sp.tire + 'mm' : '（未設定）',
+      kind: r.kind || '練習',
+      course: r.courseId ? (courses[r.courseId] || '（削除済みコース）') : '（コースなし）',
+      event: r.eventName || '（大会なし）',
+      round: r.round || '（ラウンドなし）',
+      bucket: an7Bucket(r.totalMs), totalMs: r.totalMs || 0
+    };
+  });
+}
+// ---- filters ----
+var an7F = { rates: {}, event: {}, outs: {} };
+var AN7_FIELDS = {
+  rates: [['loc', '場所'], ['motorLabel', 'モーター × 番号'], ['voltage', '電圧'], ['gear', 'ギヤ比'], ['tire', 'タイヤ径'], ['bucket', 'タイム'], ['kind', '種別']],
+  event: [['loc', '場所'], ['event', '大会名'], ['motorLabel', 'モーター × 番号'], ['round', 'ラウンド'], ['voltage', '電圧'], ['gear', 'ギヤ比'], ['tire', 'タイヤ径'], ['bucket', 'タイム']],
+  outs: [['loc', '場所'], ['motorLabel', 'モーター × 番号'], ['voltage', '電圧'], ['gear', 'ギヤ比'], ['tire', 'タイヤ径'], ['bucket', 'タイム'], ['kind', '種別']]
+};
+function an7FilterHtml(tab) {
+  var data = an7Data();
+  var f = an7F[tab];
+  var fields = AN7_FIELDS[tab].map(function(fd) {
+    var key = fd[0], vals = [];
+    data.forEach(function(d) { if (vals.indexOf(d[key]) < 0) vals.push(d[key]); });
+    vals.sort();
+    var opts = '<option value="">すべて</option>' + vals.map(function(v) { return '<option value="' + an7Esc(v) + '"' + (f[key] === v ? ' selected' : '') + '>' + an7Esc(v) + '</option>'; }).join('');
+    return '<div class="anf-f"><label>' + fd[1] + '</label><select onchange="an7SetFilter(\'' + tab + '\',\'' + key + '\',this.value)">' + opts + '</select></div>';
+  }).join('');
+  var title = tab === 'outs' ? '負けパターンを絞り込み' : (tab === 'event' ? '大会を絞り込み' : '条件を指定して分析');
+  return '<div class="anf-panel"><div class="anf-title">' + title + '</div><div class="anf-grid">' + fields + '</div><button type="button" class="anf-reset" onclick="an7ResetFilter(\'' + tab + '\')">条件リセット</button></div>';
+}
+function an7SetFilter(tab, key, val) { if (val) an7F[tab][key] = val; else delete an7F[tab][key]; an7RenderTab(tab); }
+function an7ResetFilter(tab) { an7F[tab] = {}; an7RenderTab(tab); }
+function an7Apply(data, tab) { var f = an7F[tab]; return data.filter(function(d) { return Object.keys(f).every(function(k) { return d[k] === f[k]; }); }); }
+// ---- grouping ----
+function an7Groups(data, key) {
+  var map = {}, order = [];
+  data.forEach(function(d) {
+    var k = d[key];
+    if (!map[k]) { map[k] = { label: k, judged: 0, fin: 0, out: 0, best: null, n: 0 }; order.push(k); }
+    var g = map[k];
+    g.n++;
+    if (d.judged) { g.judged++; if (d.finish) g.fin++; if (d.out) g.out++; }
+    if (d.finish && d.totalMs > 0 && (g.best == null || d.totalMs < g.best)) g.best = d.totalMs;
+  });
+  return order.map(function(k) { return map[k]; }).filter(function(g) { return g.judged > 0; });
+}
+function an7Pct(a, b) { return b > 0 ? (a / b * 100).toFixed(1) + '%' : '—'; }
+function an7RateRows(groups, mode) {
+  var gs = groups.slice();
+  if (mode === 'out') gs.sort(function(a, b) { return (b.out / b.judged) - (a.out / a.judged) || b.judged - a.judged; });
+  else gs.sort(function(a, b) { return b.judged - a.judged || (b.fin / b.judged) - (a.fin / a.judged); });
+  return gs.map(function(g) {
+    if (mode === 'out') return '<div class="an7-row"><span class="an7-lab">' + an7Esc(g.label) + '</span><span class="an7-val">アウト ' + g.out + '/' + g.judged + ' ・ ' + an7Pct(g.out, g.judged) + '</span></div>';
+    return '<div class="an7-row"><span class="an7-lab">' + an7Esc(g.label) + '</span><span class="an7-val">完走 ' + g.fin + '/' + g.judged + ' ・ ' + an7Pct(g.fin, g.judged) + (g.best != null ? ' <small>ベスト ' + rnFmtMs(g.best) + '秒</small>' : '') + '</span></div>';
+  }).join('');
+}
+function an7BestVerdict(groups, mode) {
+  var cand = groups.filter(function(g) { return g.judged >= 3; });
+  if (!cand.length) return '';
+  if (mode === 'out') {
+    cand.sort(function(a, b) { return (b.out / b.judged) - (a.out / a.judged); });
+    return '一番アウト率が高いのは「' + cand[0].label + '」で ' + an7Pct(cand[0].out, cand[0].judged) + '（' + cand[0].judged + '走）。';
+  }
+  cand.sort(function(a, b) { return (b.fin / b.judged) - (a.fin / a.judged); });
+  return '一番完走率が高いのは「' + cand[0].label + '」で ' + an7Pct(cand[0].fin, cand[0].judged) + '（' + cand[0].judged + '走）。';
+}
+function an7ComboGroups(data) {
+  var map = {}, order = [];
+  data.forEach(function(d) {
+    if (!d.judged) return;
+    var k = [d.loc, d.motorLabel, d.voltage, d.gear, d.tire].join('｜');
+    if (!map[k]) { map[k] = { label: [d.loc, d.motorLabel, d.voltage, d.gear, d.tire].join(' / '), judged: 0, fin: 0, out: 0, best: null, n: 0 }; order.push(k); }
+    var g = map[k];
+    g.judged++; g.n++;
+    if (d.finish) { g.fin++; if (d.totalMs > 0 && (g.best == null || d.totalMs < g.best)) g.best = d.totalMs; }
+    if (d.out) g.out++;
+  });
+  return order.map(function(k) { return map[k]; });
+}
+var AN7_NOJUDGE = '完走／アウトが付いた記録がまだありません。走行記録（またはストップウォッチの履歴）で付けられます。';
+// ---- rates tab ----
+function an7RatesHtml() {
+  var all = an7Data();
+  var data = an7Apply(all, 'rates');
+  var judged = data.filter(function(d) { return d.judged; });
+  var h = an7FilterHtml('rates');
+  if (!all.length) return h + anSec('🏁 完走率', anEmpty('まだ走行記録がありません。ストップウォッチで計測すると出ます。'));
+  h += anSec('🧩 条件分析（組み合わせ）', judged.length ? (function() {
+    var gs = an7ComboGroups(data);
+    gs.sort(function(a, b) { return b.judged - a.judged; });
+    return an7RateRows(gs.slice(0, 8), 'fin');
+  })() : anEmpty(AN7_NOJUDGE));
+  var fin = judged.filter(function(d) { return d.finish; }).length;
+  h += anSec('🏁 総合比率（全体）', anVerdict(judged.length ? '全体の完走率は ' + an7Pct(fin, judged.length) + '（' + fin + '/' + judged.length + '走）です。' : '') +
+    (judged.length ? '<div class="an7-row"><span class="an7-lab">全体</span><span class="an7-val">完走 ' + fin + '/' + judged.length + ' ・ ' + an7Pct(fin, judged.length) + '</span></div>' : anEmpty(AN7_NOJUDGE)));
+  [['motorLabel', '🏁 モーター × 番号別 完走率'], ['loc', '🏁 場所別 完走率'], ['voltage', '🏁 電圧別 完走率'], ['tire', '🏁 タイヤ径別 完走率'], ['gear', '🏁 ギヤ比別 完走率'], ['bucket', '🏁 タイム別 完走率'], ['kind', '🏁 種別別 完走率'], ['course', '🏁 コース別 完走率']].forEach(function(dim) {
+    var gs = an7Groups(data, dim[0]);
+    h += anSec(dim[1], gs.length ? anVerdict(an7BestVerdict(gs, 'fin')) + an7RateRows(gs, 'fin') : anEmpty(AN7_NOJUDGE));
+  });
+  return h;
+}
+// ---- event tab ----
+function an7Mode(data, key) {
+  var map = {}, best = null, bestN = 0;
+  data.forEach(function(d) { var v = d[key]; map[v] = (map[v] || 0) + 1; if (map[v] > bestN) { bestN = map[v]; best = v; } });
+  return best;
+}
+function an7PackageHtml(data) {
+  var events = [];
+  data.forEach(function(d) { if (d.event !== '（大会なし）' && events.indexOf(d.event) < 0) events.push(d.event); });
+  if (!events.length) return anEmpty('大会名が付いた記録がまだありません。ストップウォッチの履歴カードで大会名を付けると、ここに大会ごとの推しパッケージが出ます。');
+  return events.map(function(ev) {
+    var evData = data.filter(function(d) { return d.event === ev && d.judged; });
+    var gs = an7Groups(evData, 'motorLabel').filter(function(g) { return g.judged >= 2; });
+    if (!gs.length) return '<div class="an7-row"><span class="an7-lab">' + an7Esc(ev) + '</span><span class="an7-val"><small>同じモーターで2走以上のデータがまだありません</small></span></div>';
+    gs.sort(function(a, b) { return (b.fin / b.judged) - (a.fin / a.judged) || b.judged - a.judged; });
+    var top = gs[0];
+    var subset = evData.filter(function(d) { return d.motorLabel === top.label; });
+    var finSubset = subset.filter(function(d) { return d.finish; });
+    var srcSet = finSubset.length ? finSubset : subset;
+    var best = null;
+    subset.forEach(function(d) { if (d.finish && d.totalMs > 0 && (best == null || d.totalMs < best)) best = d.totalMs; });
+    var parts = ['完走率 ' + an7Pct(top.fin, top.judged) + '（' + top.judged + '走）'];
+    var v = an7Mode(srcSet, 'voltage'); if (v) parts.push('電圧 ' + v);
+    var g2 = an7Mode(srcSet, 'gear'); if (g2) parts.push('ギヤ ' + g2);
+    var t2 = an7Mode(srcSet, 'tire'); if (t2) parts.push('タイヤ ' + t2);
+    if (best != null) parts.push('ベスト ' + rnFmtMs(best) + '秒');
+    return '<div class="an7-row"><span class="an7-lab">🏆 ' + an7Esc(ev) + '：' + an7Esc(top.label) + '</span><span class="an7-val">' + an7Esc(parts.join('／')) + '</span></div>';
+  }).join('');
+}
+function an7EventHtml() {
+  var all = an7Data();
+  var data = an7Apply(all, 'event');
+  var judged = data.filter(function(d) { return d.judged; });
+  var h = an7FilterHtml('event');
+  if (!all.length) return h + anSec('🏟 大会', anEmpty('まだ走行記録がありません。'));
+  h += anSec('🧩 大会 条件分析（組み合わせ）', judged.length ? (function() {
+    var gs = an7ComboGroups(data);
+    gs.sort(function(a, b) { return b.judged - a.judged; });
+    return an7RateRows(gs.slice(0, 8), 'fin');
+  })() : anEmpty(AN7_NOJUDGE));
+  [['round', '🏟 ラウンド別 完走率'], ['event', '🏟 大会名別 完走率'], ['loc', '🏟 場所別 完走率'], ['motorLabel', '🏟 モーター別 完走率'], ['gear', '🏟 ギヤ比別 完走率']].forEach(function(dim) {
+    var gs = an7Groups(data, dim[0]);
+    h += anSec(dim[1], gs.length ? anVerdict(an7BestVerdict(gs, 'fin')) + an7RateRows(gs, 'fin') : anEmpty(AN7_NOJUDGE));
+  });
+  h += anSec('📦 大会パッケージ', an7PackageHtml(data));
+  return h;
+}
+// ---- outs tab ----
+function an7WarnHtml(data) {
+  var judged = data.filter(function(d) { return d.judged; });
+  if (judged.length < 3) return anEmpty(AN7_NOJUDGE);
+  var outN = judged.filter(function(d) { return d.out; }).length;
+  var overall = outN / judged.length;
+  var warns = [];
+  [['loc', '場所'], ['motorLabel', 'モーター × 番号'], ['gear', 'ギヤ比'], ['voltage', '電圧'], ['tire', 'タイヤ径']].forEach(function(dim) {
+    an7Groups(data, dim[0]).forEach(function(g) {
+      var r = g.out / g.judged;
+      if (g.judged >= 3 && r >= overall + 0.15 && r >= 0.4) warns.push({ dim: dim[1], label: g.label, rate: r, judged: g.judged, out: g.out });
+    });
+  });
+  if (!warns.length) return '<div class="an-note">今のところ、目立って危ない条件はありません。</div>';
+  warns.sort(function(a, b) { return b.rate - a.rate; });
+  return anVerdict('全体のアウト率 ' + an7Pct(outN, judged.length) + ' より明らかに高い条件があります。') + warns.map(function(w) {
+    return '<div class="an7-row"><span class="an7-lab an7-warn">⚠ ' + an7Esc(w.dim) + '：' + an7Esc(w.label) + '</span><span class="an7-val">アウト ' + w.out + '/' + w.judged + ' ・ ' + an7Pct(w.out, w.judged) + '</span></div>';
+  }).join('');
+}
+function an7OutsHtml() {
+  var all = an7Data();
+  var data = an7Apply(all, 'outs');
+  var judged = data.filter(function(d) { return d.judged; });
+  var outN = judged.filter(function(d) { return d.out; }).length;
+  var h = an7FilterHtml('outs');
+  if (!all.length) return h + anSec('💥 アウト概要', anEmpty('まだ走行記録がありません。'));
+  h += anSec('💥 アウト概要', judged.length ? anVerdict('全体のアウト率は ' + an7Pct(outN, judged.length) + '（' + outN + '/' + judged.length + '走）です。') + '<div class="an7-row"><span class="an7-lab">全体</span><span class="an7-val">アウト ' + outN + '/' + judged.length + ' ・ ' + an7Pct(outN, judged.length) + '</span></div>' : anEmpty(AN7_NOJUDGE));
+  h += anSec('💥 よくある負け組み合わせ（件数）', judged.length ? (function() {
+    var gs = an7ComboGroups(data).filter(function(g) { return g.out > 0; });
+    if (!gs.length) return '<div class="an-note">アウトした記録はまだありません。</div>';
+    gs.sort(function(a, b) { return b.out - a.out || b.judged - a.judged; });
+    return gs.slice(0, 8).map(function(g) {
+      return '<div class="an7-row"><span class="an7-lab">' + an7Esc(g.label) + '</span><span class="an7-val">アウト ' + g.out + ' 件 <small>（' + g.judged + '走中）</small></span></div>';
+    }).join('');
+  })() : anEmpty(AN7_NOJUDGE));
+  [['loc', '💥 場所別アウト率（高い順）'], ['motorLabel', '💥 モーター×番号別アウト率'], ['gear', '💥 ギヤ比別アウト率'], ['voltage', '💥 電圧別アウト率'], ['tire', '💥 タイヤ径別アウト率']].forEach(function(dim) {
+    var gs = an7Groups(data, dim[0]);
+    h += anSec(dim[1], gs.length ? an7RateRows(gs, 'out') : anEmpty(AN7_NOJUDGE));
+  });
+  h += anSec('⚠ 注意したい条件', an7WarnHtml(data));
+  return h;
+}
+// ---- render dispatch ----
+function an7RenderTab(tab) {
+  var panels = { rates: ['anPanelRates', an7RatesHtml], event: ['anPanelEvent', an7EventHtml], outs: ['anPanelOuts', an7OutsHtml] };
+  var p = panels[tab];
+  if (!p) return;
+  var el = document.getElementById(p[0]);
+  if (el) el.innerHTML = p[1]();
+}
+function an7RenderRunTabs() { an7RenderTab('rates'); an7RenderTab('event'); an7RenderTab('outs'); }
+(function() {
+  var orig = window.renderAnalysis;
+  if (typeof orig === 'function') {
+    window.renderAnalysis = function() {
+      var r = orig.apply(this, arguments);
+      try { an7Distribute(); } catch (e) {}
+      try { an7RenderRunTabs(); } catch (e) {}
+      anShowTab(anTabCur);
+      return r;
+    };
+  }
+  if (document.body && document.body.classList.contains('shell-at-analysis') && typeof window.renderAnalysis === 'function') {
+    try { window.renderAnalysis(); } catch (e) {}
+  }
+})();
+// ---- event name / round on stopwatch records ----
+var AN7_ROUNDS = ['1', '2', '3', '4', '5', '準決勝', '決勝'];
+function an7EventNames() {
+  var names = [];
+  rnSwHistory().forEach(function(r) { if (r.eventName && names.indexOf(r.eventName) < 0) names.push(r.eventName); });
+  return names;
+}
+function an7EnsureDatalist() {
+  var dl = document.getElementById('rnEventList');
+  if (!dl) { dl = document.createElement('datalist'); dl.id = 'rnEventList'; document.body.appendChild(dl); }
+  dl.innerHTML = an7EventNames().map(function(n) { return '<option value="' + an7Esc(n) + '">'; }).join('');
+}
+function an7InjectCards() {
+  an7EnsureDatalist();
+  document.querySelectorAll('.sw-history-card').forEach(function(card) {
+    var grid = card.querySelector('.sw-spec-grid');
+    if (!grid || grid.querySelector('.rn-event-inp')) return;
+    var id = card.getAttribute('data-rec-id');
+    var rec = (typeof rnFindSwRec === 'function') ? rnFindSwRec(id) : null;
+    if (!rec) return;
+    var eInp = document.createElement('input');
+    eInp.type = 'text';
+    eInp.className = 'sw-spec-input rn-link-sel rn-event-inp';
+    eInp.placeholder = '大会名';
+    eInp.setAttribute('list', 'rnEventList');
+    eInp.value = rec.eventName || '';
+    eInp.addEventListener('change', function() {
+      var r = rnFindSwRec(id); if (!r) return;
+      r.eventName = eInp.value.trim();
+      try { localStorage.setItem('signal_sw_event_default', r.eventName); } catch (e) {}
+      if (typeof swPersistHistory === 'function') swPersistHistory();
+      an7EnsureDatalist();
+      if (typeof rnFlashCard === 'function') rnFlashCard(card);
+    });
+    grid.appendChild(eInp);
+    var rSel = document.createElement('select');
+    rSel.className = 'sw-spec-input rn-link-sel rn-round-sel';
+    rSel.innerHTML = '<option value="">ラウンド</option>' + AN7_ROUNDS.map(function(x) { return '<option value="' + x + '">' + x + '</option>'; }).join('');
+    rSel.value = rec.round || '';
+    rSel.addEventListener('change', function() {
+      var r = rnFindSwRec(id); if (!r) return;
+      r.round = rSel.value || '';
+      try { localStorage.setItem('signal_sw_round_default', r.round); } catch (e) {}
+      if (typeof swPersistHistory === 'function') swPersistHistory();
+      if (typeof rnFlashCard === 'function') rnFlashCard(card);
+    });
+    grid.appendChild(rSel);
+  });
+}
+(function() {
+  var orig = window.renderSwHistory;
+  if (typeof orig === 'function') {
+    window.renderSwHistory = function() { var r = orig.apply(this, arguments); try { an7InjectCards(); } catch (e) {} return r; };
+    try { an7InjectCards(); } catch (e) {}
+  }
+  var origSave = window.swAutoSaveHistory;
+  if (typeof origSave === 'function') {
+    window.swAutoSaveHistory = function() {
+      var r = origSave.apply(this, arguments);
+      try {
+        var ev = localStorage.getItem('signal_sw_event_default') || '';
+        var rd = localStorage.getItem('signal_sw_round_default') || '';
+        if (ev || rd) {
+          var hist = rnSwHistory();
+          var newest = null;
+          hist.forEach(function(x) { if (!newest || (x.ts || 0) > (newest.ts || 0)) newest = x; });
+          if (newest && newest.eventName === undefined) {
+            newest.eventName = ev;
+            newest.round = rd;
+            if (typeof swPersistHistory === 'function') swPersistHistory();
+          }
+        }
+      } catch (e) {}
+      return r;
+    };
+  }
+})();
+
+</script><datalist id="rnEventList"></datalist>
 
 </body></html>
