@@ -2042,7 +2042,7 @@ body.shell-at-home #shellLauncher { display: flex; }
 body.shell-at-home > *:not(#shellLauncher) { display: none !important; }
 body.shell-at-sw #shellSwWrap { display: block; }
 body.shell-at-sw #shellHomeBtn { display: block; }
-body.shell-at-sw > *:not(#shellSwWrap):not(#shellHomeBtn) { display: none !important; }
+body.shell-at-sw > *:not(#shellSwWrap):not(#shellHomeBtn):not(#shellModBtn) { display: none !important; }
 body.shell-at-rpm #shellHomeBtn { display: block; }
 #shellLauncher { position: fixed; inset: 0; z-index: 500; background: #0d0d0f; flex-direction: column; align-items: center; padding: calc(env(safe-area-inset-top, 0px) + 28px) 20px 24px; box-sizing: border-box; overflow-y: auto; }
 .shell-brand { text-align: center; margin-bottom: 26px; }
@@ -2068,7 +2068,7 @@ body.shell-at-rpm #shellHomeBtn { display: block; }
 #shellLedgerWrap { display: none; }
 body.shell-at-ledger #shellLedgerWrap { display: block; }
 body.shell-at-ledger #shellHomeBtn { display: block; }
-body.shell-at-ledger > *:not(#shellLedgerWrap):not(#shellHomeBtn) { display: none !important; }
+body.shell-at-ledger > *:not(#shellLedgerWrap):not(#shellHomeBtn):not(#shellModBtn) { display: none !important; }
 #shellLedgerWrap { position: fixed; inset: 0; z-index: 400; background: #0d0d0f; overflow-y: auto; }
 .lg-inner { max-width: 560px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 50px) 14px 40px; box-sizing: border-box; color: #fff; }
 .lg-title { font-size: 21px; font-weight: 800; margin-bottom: 4px; }
@@ -2121,7 +2121,7 @@ body.shell-at-ledger > *:not(#shellLedgerWrap):not(#shellHomeBtn) { display: non
 #shellRunsWrap { display: none; }
 body.shell-at-runs #shellRunsWrap { display: block; }
 body.shell-at-runs #shellHomeBtn { display: block; }
-body.shell-at-runs > *:not(#shellRunsWrap):not(#shellHomeBtn) { display: none !important; }
+body.shell-at-runs > *:not(#shellRunsWrap):not(#shellHomeBtn):not(#shellModBtn) { display: none !important; }
 #shellRunsWrap { position: fixed; inset: 0; z-index: 400; background: #0d0d0f; overflow-y: auto; }
 .rn-inner { max-width: 560px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 50px) 14px 40px; box-sizing: border-box; color: #fff; }
 .rn-title { font-size: 21px; font-weight: 800; margin-bottom: 4px; }
@@ -2164,7 +2164,7 @@ body.shell-at-runs > *:not(#shellRunsWrap):not(#shellHomeBtn) { display: none !i
 #shellAnalysisWrap { display: none; }
 body.shell-at-analysis #shellAnalysisWrap { display: block; }
 body.shell-at-analysis #shellHomeBtn { display: block; }
-body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn) { display: none !important; }
+body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn):not(#shellModBtn) { display: none !important; }
 #shellAnalysisWrap { position: fixed; inset: 0; z-index: 400; background: #0d0d0f; overflow-y: auto; }
 .an-inner { max-width: 560px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 50px) 14px 40px; box-sizing: border-box; color: #fff; }
 .an-title { font-size: 21px; font-weight: 800; margin-bottom: 4px; }
@@ -2314,14 +2314,56 @@ body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn) { display:
 .cs-simlaps div { padding: 1px 0; }
 
 </style>
+<style id="shell15Css">
+
+/* ===== START SCREEN CHOICE + MODULE BUTTON + SIM NOTE proto15 ===== */
+#shellModBtn { display: none; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 56px); right: 12px; z-index: 9999; padding: 8px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.35); background: rgba(28,28,30,0.9); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+body.shell-at-rpm #shellModBtn { display: block; }
+body.shell-at-rpm #shellHomeBtn { display: none; }
+.shell-startset { margin-top: 20px; width: 100%; max-width: 430px; }
+.shell-startset-t { font-size: 12px; color: #aeaeb2; margin-bottom: 7px; text-align: center; }
+.shell-startrow { display: flex; gap: 8px; }
+.shell-startbtn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: #1c1c1e; color: #d6d6da; font-size: 13.5px; cursor: pointer; }
+.shell-startbtn.on { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
+.cs-sim-note { font-size: 11.5px; line-height: 1.55; color: #e8c268; margin-bottom: 7px; }
+
+</style>
+<style id="cs16Css">
+
+/* ===== BUILDER LAYOUT proto16 ===== */
+#csSvgBox { height: 40vh; min-height: 220px; margin: 0 -14px; border-left: none; border-right: none; border-radius: 0; }
+#csSvgBox > svg { width: 100% !important; height: 100% !important; }
+.cs-ctlrow { display: flex; gap: 6px; margin: 8px 0 10px; }
+.cs-ctlbtn { flex: 1; padding: 5px 2px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.28); background: #2c2c2e; color: #e8e8ea; font-size: 12.5px; line-height: 1.5; cursor: pointer; white-space: nowrap; }
+.cs-ptabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.cs-ptab { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: #242426; color: #d6d6da; font-size: 14px; font-weight: 700; cursor: pointer; }
+.cs-ptab.on { background: #FF7A00; border-color: #FF7A00; color: #fff; }
+.cs-complete { width: 100%; margin-top: 12px; padding: 13px; font-size: 15px; }
+
+</style>
+<style id="shell17Css">
+
+/* ===== MODULE BUTTON proto17 ===== */
+#shellModBtn { display: none; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 50%; right: auto; transform: translateX(-50%); z-index: 9999; padding: 10px 22px; border-radius: 999px; border: 2px solid #FF7A00; background: rgba(20,20,22,0.92); color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; cursor: pointer; }
+body.shell-at-rpm #shellModBtn, body.shell-at-sw #shellModBtn, body.shell-at-ledger #shellModBtn, body.shell-at-runs #shellModBtn, body.shell-at-analysis #shellModBtn { display: block; }
+
+</style>
+<style id="shell18Css">
+
+/* ===== RUNS/COURSE SPLIT + BUTTON TUNING proto18 ===== */
+#shellModBtn { top: calc(env(safe-area-inset-top, 0px) + 30px); padding: 7px 16px; font-size: 13.5px; border-width: 1.5px; }
+#shellHomeBtn { display: none !important; }
+.rn-backlink { display: inline-block; margin: 0 0 10px; padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: #242426; color: #d6d6da; font-size: 12.5px; cursor: pointer; }
+
+</style>
 </head>
-<body class="load-zero theme-classic shell-at-home">
+<body class="load-zero theme-classic shell-at-rpm">
 <div class="app-shell">
 
 <section class="card">
 <div class="brand-bar">
   <div class="brand-name">RPM MEMORY</div>
-  <div class="brand-sub" data-i18n="brandSub">モーター音で回転数を測定</div>
+  
   <button type="button" id="shareBtn" class="share-topbtn" aria-label="共有" data-ja-aria="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.8V2.8"></path><path d="M7.9 6.6L12 2.2l4.1 4.4"></path><path d="M9.8 10.2H6.6A1.6 1.6 0 0 0 5 11.8v7.8a1.6 1.6 0 0 0 1.6 1.6h10.8a1.6 1.6 0 0 0 1.6-1.6v-7.8a1.6 1.6 0 0 0-1.6-1.6H14.2"></path></svg></button>
 </div>
 <div class="conf-badge" id="confBadge" aria-live="polite"></div>
@@ -5891,7 +5933,7 @@ if (themeMeta) themeMeta.setAttribute("content", active ? "#0d0d0f" : "#f4f2ee")
 
 
 (function initBackup() {
-  const KEYS = ["rpmHistory","rpmFavorites","rpmTarget","rpmLockSnaps","rpmCmpVoltFine","rpmCmpSplit","rpmStableGate","rpmMachine","rpmSetupFavs","rpmMachineApplied","darkMode","rpmOnboardV4","rpmIntroV1","rpmUnlock","rpmUCnt","rpmUiTheme","rpmUiThemeV2","rpmLang","rpmHistFold","rpmHistOpen","rpmStripIntroOff","rpmCsvCols","rpmHistPresets","rpmAgcNoteV1","rpmMotorUnits","rpmLedgerStock","shellLedgerUnits","shellPhotos","shellRunOutcomes","shellLedgerSort","shellCourses","shellMySections"];
+  const KEYS = ["rpmHistory","rpmFavorites","rpmTarget","rpmLockSnaps","rpmCmpVoltFine","rpmCmpSplit","rpmStableGate","rpmMachine","rpmSetupFavs","rpmMachineApplied","darkMode","rpmOnboardV4","rpmIntroV1","rpmUnlock","rpmUCnt","rpmUiTheme","rpmUiThemeV2","rpmLang","rpmHistFold","rpmHistOpen","rpmStripIntroOff","rpmCsvCols","rpmHistPresets","rpmAgcNoteV1","rpmMotorUnits","rpmLedgerStock","shellLedgerUnits","shellPhotos","shellRunOutcomes","shellLedgerSort","shellCourses","shellMySections","shell_start_mode"];
   const exportBtn = document.getElementById("backupExportBtn");
   const importBtn = document.getElementById("backupImportBtn");
   const file = document.getElementById("backupImportFile");
@@ -10393,7 +10435,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="shell-card-name">ストップウォッチ</div>
       <div class="shell-card-sub">シグナル付き・スタート練習</div>
     </button>
-    <button type="button" class="shell-card" onclick="shellGo('runs')">
+    <button type="button" class="shell-card" onclick="shellGoRuns()">
       <div class="shell-card-icon">🏁</div>
       <div class="shell-card-name">走行記録</div>
       <div class="shell-card-sub">大会・コースごとの記録</div>
@@ -10409,10 +10451,18 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="shell-card-sub">レイアウトをパズルで組む</div>
     </button>
   </div>
+  <div class="shell-startset">
+    <div class="shell-startset-t">起動時の画面</div>
+    <div class="shell-startrow">
+      <button type="button" class="shell-startbtn" id="shellStartRpm" onclick="shellSetStartMode('rpm')">RPMトップ</button>
+      <button type="button" class="shell-startbtn" id="shellStartLast" onclick="shellSetStartMode('last')">前回の画面</button>
+    </div>
+  </div>
   <div class="shell-note" id="shellNote"></div>
-  <div class="shell-foot">前回使ったツールは、次回起動時にそのまま開きます</div>
+  <div class="shell-foot">起動時の画面は上の設定で選べます</div>
 </div>
 <button type="button" id="shellHomeBtn" onclick="shellHome()">‹ ホーム</button>
+<button type="button" id="shellModBtn" onclick="shellHome()">モジュール</button>
 <div id="shellSwWrap">
 
   <!-- 合図スタート用フルスクリーン（横並び3丸） -->
@@ -12531,10 +12581,14 @@ function shellSoon(name) {
   if (el) el.textContent = '「' + name + '」は準備中です';
 }
 (function shellBoot() {
-  var last = null;
-  try { last = localStorage.getItem(SHELL_LAST_KEY); } catch (e) {}
-  if (last === 'rpm' || last === 'sw' || last === 'ledger' || last === 'runs' || last === 'analysis') shellApply(last);
-  else shellApply('home');
+  var mode = 'rpm';
+  try { mode = localStorage.getItem('shell_start_mode') || 'rpm'; } catch (e) {}
+  if (mode === 'last') {
+    var last = null;
+    try { last = localStorage.getItem(SHELL_LAST_KEY); } catch (e) {}
+    if (last === 'rpm' || last === 'sw' || last === 'ledger' || last === 'runs' || last === 'analysis') { shellApply(last); return; }
+  }
+  shellApply('rpm');
 })();
 
 </script>
@@ -12927,9 +12981,10 @@ lgLoad();
 <div id="shellRunsWrap">
   <div class="rn-inner">
     <div class="rn-title">走行記録</div>
-    <div class="rn-tabs"><button type="button" class="rn-tab on" id="rnTabRuns" onclick="runsShowView('runs')">走行</button><button type="button" class="rn-tab" id="rnTabCourses" onclick="runsShowView('courses')">コース</button></div>
+    
     <div id="rnRunsView">
-    <div class="rn-sub">ストップウォッチの記録がそのまま反映されます。モーターは台帳と紐付け、種別（レース／練習）と完走／アウトはここでも付けられます。コースの登録は「コース」タブから。</div>
+    <button type="button" class="rn-backlink" onclick="shellGoCourse()">コース作成・コース管理 ›</button>
+    <div class="rn-sub">ストップウォッチの記録がそのまま反映されます。モーターは台帳と紐付け、種別（レース／練習）と完走／アウトはここでも付けられます。コースの作成はランチャーの「コース作成」から。</div>
     <div class="rn-chips">
       <button type="button" class="rn-chip" data-rn-kind="" onclick="runsSetKindFilter('')">すべて</button>
       <button type="button" class="rn-chip" data-rn-kind="race" onclick="runsSetKindFilter('race')">レース</button>
@@ -13592,7 +13647,7 @@ function renderCourses() {
   csLoad();
   var box = document.getElementById('rnCourseView');
   if (!box) return;
-  var h = '';
+  var h = '<button type="button" class="rn-backlink" onclick="runsShowView(\'runs\')">‹ 走行記録</button>';
   if (csDraft) h += csFormHtml();
   else h += '<button type="button" class="cs-btn primary" style="width:100%;margin-bottom:12px" onclick="csNewCourse()">＋ コースを登録</button>';
   if (!csCourses.length && !csDraft) {
@@ -15629,6 +15684,128 @@ function csSimToggle(id) {
   }, 30);
   csSimAnim[id] = anim;
 }
+
+</script>
+
+<script>
+
+// ===== START SCREEN CHOICE proto15 =====
+function shellStartMode() { try { return localStorage.getItem('shell_start_mode') || 'rpm'; } catch (e) { return 'rpm'; } }
+function shellRefreshStartMode() {
+  var m = shellStartMode();
+  var a = document.getElementById('shellStartRpm'), b = document.getElementById('shellStartLast');
+  if (a) a.classList.toggle('on', m === 'rpm');
+  if (b) b.classList.toggle('on', m === 'last');
+}
+function shellSetStartMode(m) { try { localStorage.setItem('shell_start_mode', m); } catch (e) {} shellRefreshStartMode(); }
+var shellHomeBase15 = shellHome;
+shellHome = function() { shellHomeBase15(); shellRefreshStartMode(); };
+
+// ---- overridden: sim block (caution note) ----
+function csSimHtml(c) {
+  var cfg = csSimCfgFor(c.id);
+  var h = '<div class="cs-sim" data-sim="' + rnEsc(c.id) + '">';
+  h += '<div class="cs-sim-h">🧪 擬似ラン（抵抗・ロスなしの理論値）</div>';
+  h += '<div class="cs-sim-note">⚠ 注意：抵抗・摩擦・コーナーでの減速は考えていません。モーターの速さだけで計算した理論値です。実際のタイムはこれより遅くなります。</div>';
+  if (!c.lengthM) { h += '<div class="cs-note">全長が入ると計算できます</div></div>'; return h; }
+  var opts = '<option value="">モーターを選ぶとベストRPMが入ります</option>';
+  if (typeof lgRows === 'function') {
+    lgRows().forEach(function(r) {
+      var st = r.stats;
+      if (st && st.best) opts += '<option value="' + st.best + '">' + rnEsc(r.motor) + ' ' + rnEsc(r.name) + '（ベスト ' + st.best.toLocaleString() + '）</option>';
+    });
+  }
+  h += '<div class="cs-simrow"><select class="cs-sim-unit" onchange="csSimUnitPick(\'' + rnEsc(c.id) + '\', this)">' + opts + '</select></div>';
+  h += '<div class="cs-simrow"><label>RPM <input type="number" class="cs-sim-rpm" value="' + rnEsc(String(cfg.rpm)) + '" placeholder="30000" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')"></label>' +
+    '<label>ギヤ <select class="cs-sim-gear" onchange="csSimUpdate(\'' + rnEsc(c.id) + '\')">' + [3.5, 3.7, 4, 4.2, 5].map(function(g) { return '<option value="' + g + '"' + (Number(cfg.gear) === g ? ' selected' : '') + '>' + g.toFixed(1) + ':1</option>'; }).join('') + '</select></label>' +
+    '<label>タイヤ <input type="number" class="cs-sim-tire" step="0.1" value="' + cfg.tire + '" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')">mm</label></div>';
+  h += '<div class="cs-sim-out" id="csSimOut-' + rnEsc(c.id) + '">' + csSimOutText(c) + '</div>';
+  if (c.pieces && c.pieces.length) {
+    h += '<div class="cs-simrow"><button type="button" class="cs-simrun" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
+  h += '<div class="cs-simlaps" id="csSimLaps-' + rnEsc(c.id) + '"></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+</script>
+
+<script>
+
+// ===== BUILDER LAYOUT: palette tabs + two phases proto16 =====
+var csPalTab = 'basic';
+var csPhase = 'build';
+function csPaletteGridHtml(g) {
+  var codes = g === 'section' ? CS_PALETTE_SECTION : g === 'bank' ? CS_PALETTE_BANK : CS_PALETTE_BASIC;
+  return '<div class="cs-palette">' + codes.map(function(code) { return '<button type="button" class="cs-pbtn" onclick="csAddPiece(\'' + code + '\')">' + CS_PIECES[code].label + '</button>'; }).join('') + '</div>';
+}
+function csSetPalTab(g) {
+  csPalTab = g;
+  var tabs = document.querySelectorAll('.cs-ptab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-g') === g);
+  var pal = document.getElementById('csPalette');
+  if (pal) pal.innerHTML = csPaletteGridHtml(g);
+}
+function csGoDetail() { csPhase = 'detail'; renderCourses(); window.scrollTo(0, 0); }
+function csGoBuild() { csPhase = 'build'; renderCourses(); }
+var csNewCourseBase16 = csNewCourse;
+csNewCourse = function() { csPhase = 'build'; csPalTab = 'basic'; csNewCourseBase16(); };
+var csEditCourseBase16 = csEditCourse;
+csEditCourse = function(id) { csPhase = 'build'; csEditCourseBase16(id); };
+
+// ---- overridden: course form (two-phase layout) ----
+function csFormHtml() {
+  var c = csDraft;
+  var kindOpts = CS_KINDS.map(function(k) { return '<option value="' + k + '"' + (c.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
+  var h = '<div class="cs-form"><h3>' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3>';
+  h += '<div class="cs-viewrow" id="csViewRow"></div>';
+  h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
+  h += '<div class="cs-ctlrow"><button type="button" class="cs-ctlbtn" onclick="csUndo()">↩ 戻る</button><button type="button" class="cs-ctlbtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ctlbtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ctlbtn" onclick="csClearPieces()">全部消す</button></div>';
+  if (csPhase !== 'detail') {
+    h += '<div class="cs-ptabs">' + [['basic', '基本'], ['section', 'セクション'], ['bank', 'バンク']].map(function(t) { return '<button type="button" class="cs-ptab' + (csPalTab === t[0] ? ' on' : '') + '" data-g="' + t[0] + '" onclick="csSetPalTab(\'' + t[0] + '\')">' + t[1] + '</button>'; }).join('') + '</div>';
+    h += '<div id="csPalette">' + csPaletteGridHtml(csPalTab) + '</div>';
+    h += '<div class="cs-presets">' + CS_PRESETS.map(function(p, i) { return '<button type="button" class="cs-prebtn" onclick="csAddPreset(' + i + ')">' + p.label + '</button>'; }).join('') + '</div>';
+    h += '<div class="cs-seqwrap" id="csSeqChips"></div>';
+    h += '<div id="csEditBar"></div>';
+    h += '<div class="cs-note">全長はピースの標準長（ストレート54cm・カーブ45°など）からの目安です。特殊セクションは実物と異なる場合があります。高さはスロープで自動で±110mm付き、選んだピースごとに変えられます。</div>';
+    h += '<button type="button" class="cs-btn primary cs-complete" onclick="csGoDetail()">作成完了 ▶ 次へ（名前・写真・メモ）</button>';
+  } else {
+    h += '<button type="button" class="cs-ebtn" style="margin-bottom:10px" onclick="csGoBuild()">‹ レイアウト作成に戻る</button>';
+    h += '<div class="cs-frow"><label>コース名</label><input id="csFName" type="text" value="' + rnEsc(c.name || '') + '"></div>';
+    h += '<div class="cs-fgrid"><div class="cs-frow"><label>種別</label><select id="csFKind">' + kindOpts + '</select></div>';
+    h += '<div class="cs-frow"><label>場所・会場</label><input id="csFVenue" type="text" value="' + rnEsc(c.venue || '') + '"></div></div>';
+    h += '<div class="cs-fgrid"><div class="cs-frow"><label>周回数（1レース）</label><input id="csFLaps" type="number" inputmode="numeric" value="' + (c.laps || 3) + '"></div>';
+    h += '<div class="cs-frow"><label>レーン数</label><select id="csFLanes"><option value="3"' + ((c.lanes || 3) === 3 ? ' selected' : '') + '>3レーン</option><option value="5"' + ((c.lanes || 3) === 5 ? ' selected' : '') + '>5レーン</option></select></div>';
+    h += '<div class="cs-frow"><label>全長 手入力（m・ピースがないとき）</label><input id="csFLengthManual" type="number" step="0.1" inputmode="decimal" value="' + (c.lengthManual === '' || c.lengthManual == null ? '' : c.lengthManual) + '"></div></div>';
+    h += '<div class="cs-frow"><label>マイセット（自分の組み合わせ）</label><div class="cs-presets" id="csMySetRow"></div><button type="button" class="cs-ebtn" style="width:100%" onclick="csSaveMySet()">今の並びをマイセットに保存</button></div>';
+    h += '<div class="cs-frow"><label>写真（レイアウト図・コース全体など）</label><div class="cs-photos" id="csPhotoRow"></div>';
+    h += '<button type="button" class="cs-ebtn" style="width:100%" onclick="document.getElementById(\'csPhotoInput\').click()">写真を追加</button>';
+    h += '<input type="file" id="csPhotoInput" accept="image/*" style="display:none" onchange="csHandlePhoto(this)"></div>';
+    h += '<div class="cs-frow"><label>危険ポイント</label><textarea id="csFDanger" rows="2">' + rnEsc(c.danger || '') + '</textarea></div>';
+    h += '<div class="cs-frow"><label>メモ</label><textarea id="csFMemo" rows="2">' + rnEsc(c.memo || '') + '</textarea></div>';
+    h += '<div class="cs-btnrow"><button type="button" class="cs-btn primary" onclick="csSaveForm()">保存</button><button type="button" class="cs-btn" onclick="csCancelForm()">キャンセル</button></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+</script>
+
+<script>
+
+// ===== RUNS vs COURSE-CREATION split proto18 =====
+function shellGoRuns() { shellGo('runs'); if (typeof runsShowView === 'function') runsShowView('runs'); }
+function shellGoCourse() {
+  shellGo('runs');
+  if (typeof runsShowView === 'function') runsShowView('courses');
+  if (!csDraft) csNewCourse();
+}
+var runsShowViewBase18 = runsShowView;
+runsShowView = function(v) {
+  runsShowViewBase18(v);
+  var t = document.querySelector('.rn-title');
+  if (t) t.textContent = v === 'courses' ? 'コース' : '走行記録';
+};
 
 </script>
 
