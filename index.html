@@ -10477,7 +10477,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
   </div>
   <div class="shell-note" id="shellNote"></div>
   <div class="shell-foot">起動時の画面は上の設定で選べます</div>
-</div>
+<div id="shellBuildStamp" style="text-align: center; color: rgb(138, 143, 152); font-size: 11px; padding: 10px 0px 26px;">shell proto26</div></div>
 <button type="button" id="shellHomeBtn" onclick="shellHome()">‹ ホーム</button>
 <button type="button" id="shellModBtn" onclick="shellHome()">モジュール</button>
 <div id="shellSwWrap">
@@ -16427,6 +16427,7 @@ function shellSwKindSet(k) {
   var panel = document.querySelector('.stopwatch-panel');
   var firstRow = panel && panel.querySelector('.stopwatch-btns');
   if (!panel || !firstRow) return;
+  if (document.getElementById('shellSwKindRow')) { shellSwKindPaint(); return; }
   var row = document.createElement('div');
   row.className = 'sw-kindrow'; row.id = 'shellSwKindRow';
   row.innerHTML = '<span class="sw-kind-lab">種別</span><button type="button" class="sw-kindbtn" id="shellSwKindRace" onclick="shellSwKindSet(\'race\')">レース</button><button type="button" class="sw-kindbtn" id="shellSwKindPractice" onclick="shellSwKindSet(\'practice\')">練習</button>';
@@ -16591,5 +16592,113 @@ function csSimPath(c, cfg) {
 }
 
 </script><div class="shell-modal25" id="shellUnitModal"><div class="sm-card"><div class="sm-title">使うモーター（台帳の個体）</div><div id="shellUnitList"></div><button type="button" class="sm-close" onclick="shellCloseUnitModal()">閉じる</button></div></div><div class="shell-modal25" id="shellAdjModal"><div class="sm-card"><div class="sm-title">速度調整</div><div class="sm-row"><label>ギヤ比</label><select id="shellAdjGear" onchange="shellAdjSet()"><option value="3.5:1">3.5:1</option><option value="3.7:1">3.7:1</option><option value="4.0:1">4.0:1</option><option value="4.2:1">4.2:1</option><option value="5:1">5:1</option><option value="6.4:1">6.4:1</option><option value="11.2:1">11.2:1</option></select></div><div class="sm-row"><label>タイヤ径</label><input id="shellAdjTire" type="number" step="0.1" inputmode="decimal" onchange="shellAdjSet()"> <span style="font-size:12px;color:#aeaeb2">mm</span></div><button type="button" class="sm-btn" onclick="shellAdjTarget()">目標RPMを設定する</button><button type="button" class="sm-btn" onclick="shellAdjMachine()">マシン設定を開く（モーター・個体）</button><button type="button" class="sm-close" onclick="shellCloseAdjModal()">閉じる</button></div></div>
+
+<script>
+// ===== AUDIT FIXES proto26 =====
+// F1b: dedupe kind rows however they got duplicated; paint every copy consistently.
+function shellDedupeKindRows() {
+  var rows = document.querySelectorAll('.sw-kindrow');
+  for (var i = 1; i < rows.length; i++) rows[i].remove();
+  if (rows.length && typeof shellSwKindPaint === 'function') shellSwKindPaint();
+}
+shellDedupeKindRows();
+
+// F2: heal legacy course data — pieces exist but lengthM missing -> compute & persist.
+function shellHealCourses() {
+  try {
+    if (typeof csLoad !== 'function' || typeof csSave !== 'function' || typeof csSimulate !== 'function') return;
+    csLoad();
+    var list = window.csCourses;
+    if (!Array.isArray(list)) return;
+    var changed = false;
+    list.forEach(function(c) {
+      if (!c || !Array.isArray(c.pieces) || !c.pieces.length) return;
+      if (!c.lengthM) {
+        var sim = csSimulate(c.pieces);
+        if (sim && sim.total > 0) { c.lengthM = Math.round(sim.total) / 100; changed = true; }
+      }
+      if (!Array.isArray(c.heights) || c.heights.length < c.pieces.length) {
+        var h = Array.isArray(c.heights) ? c.heights.slice() : [];
+        while (h.length < c.pieces.length) h.push(0);
+        c.heights = h; changed = true;
+      }
+      if (!c.lanes) { c.lanes = 3; changed = true; }
+      if (!c.laps) { c.laps = 1; changed = true; }
+    });
+    if (changed) csSave();
+  } catch (e) { /* healing must never break boot */ }
+}
+shellHealCourses();
+// heal again right before courses render (covers data imported later via restore)
+if (typeof renderCourses === 'function') {
+  var shellRenderCourses26 = renderCourses;
+  renderCourses = function() { shellHealCourses(); return shellRenderCourses26.apply(this, arguments); };
+}
+
+// F3: pseudo-run must say WHY it cannot run, never fail silently.
+if (typeof csSimToggle === 'function') {
+  var shellSimToggle26 = csSimToggle;
+  csSimToggle = function(id) {
+    var c = (typeof csCourseById === 'function') ? csCourseById(id) : null;
+    var out = document.getElementById('csSimOut-' + id);
+    if (window.csSimAnim && csSimAnim[id]) { return shellSimToggle26.apply(this, arguments); }
+    if (!c) { if (out) out.textContent = 'コースが見つかりませんでした'; return; }
+    if (!c.pieces || !c.pieces.length) { if (out) out.textContent = 'ピースが入っていないので走れません（手入力の全長だけでは走行表示はできません）'; return; }
+    if (!c.lengthM) {
+      shellHealCourses();
+      c = csCourseById(id);
+      if (!c || !c.lengthM) { if (out) out.textContent = '全長が入っていないので走れません'; return; }
+    }
+    return shellSimToggle26.apply(this, arguments);
+  };
+}
+
+// F5: unclosed courses get a plain note in the sim readout.
+if (typeof csSimOutText === 'function') {
+  var shellSimOutText26 = csSimOutText;
+  csSimOutText = function(c) {
+    var t = shellSimOutText26.apply(this, arguments);
+    try {
+      if (c && c.pieces && c.pieces.length && typeof csSimulate === 'function') {
+        var sim = csSimulate(c.pieces);
+        if (sim && !sim.closed && t && t.indexOf('RPMを入れて') !== 0) {
+          t += '<br>※このコースは一周つながっていません（ずれ 約 ' + (sim.endDist / 100).toFixed(2) + ' m）。走行表示では終わりからスタートへジャンプします';
+        }
+      }
+    } catch (e) {}
+    return t;
+  };
+}
+
+// F4: warn before saving a course that does not close into a loop.
+if (typeof csSaveForm === 'function') {
+  var shellCsSaveForm26 = csSaveForm;
+  csSaveForm = function() {
+    try {
+      if (window.csDraft && csDraft.pieces && csDraft.pieces.length && typeof csSimulate === 'function') {
+        var sim = csSimulate(csDraft.pieces);
+        if (sim && !sim.closed) {
+          var msg = '一周つながっていません。\n位置のずれ 約 ' + (sim.endDist / 100).toFixed(2) + ' m／向きのずれ ' + Math.round(sim.heading || 0) + '°\nこのまま保存しますか？';
+          if (!window.confirm(msg)) return;
+        }
+      }
+    } catch (e) {}
+    return shellCsSaveForm26.apply(this, arguments);
+  };
+}
+
+// F6: build stamp on the launcher so the running version is always checkable.
+(function() {
+  var l = document.getElementById('shellLauncher');
+  if (l && !document.getElementById('shellBuildStamp')) {
+    var d = document.createElement('div');
+    d.id = 'shellBuildStamp';
+    d.style.cssText = 'text-align:center;color:#8a8f98;font-size:11px;padding:10px 0 26px;';
+    d.textContent = 'shell proto26';
+    l.appendChild(d);
+  }
+})();
+</script>
+
 
 </body></html>
