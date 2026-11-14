@@ -2505,7 +2505,7 @@ body.shell-at-rpm #shellModBtn, body.shell-at-sw #shellModBtn, body.shell-at-led
 <div class="tire-guide" id="abGuide"></div>
 </div>
 <div class="realtime-buttons">
-<div class="shell-useunit" id="shellUseUnitBar"><span class="suu-lab">使うモーター</span><select id="shellUseUnitSel" onchange="shellUseUnitChanged()"><option value="">選択なし（通常の保存）</option></select></div><div class="realtime-btn-row">
+<div class="realtime-btn-row">
 <button class="primary-btn blue" id="startBtn" data-i18n="start">計測開始</button>
 <button class="secondary-btn gray" id="lockBtn" data-i18n="lock">ロック</button>
 <button class="secondary-btn gray" id="saveBtn" data-i18n="save">保存</button>
@@ -10495,7 +10495,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div style="font-size:16px;font-weight:700;">⏱️ タイム計測</div>
       <div class="sw-signal-dots" id="swSignalDots" aria-hidden="true"><div class="sw-dot" id="swDot1"></div><div class="sw-dot" id="swDot2"></div><div class="sw-dot" id="swDot3"></div></div>
       <div class="stopwatch-display" id="swDisplay">0.000</div>
-      <div class="stopwatch-sub" id="swSub">停止中</div>      <div class="stopwatch-btns">
+      <div class="stopwatch-sub" id="swSub">停止中</div>      <div class="sw-kindrow" id="shellSwKindRow"><span class="sw-kind-lab">種別</span><button type="button" class="sw-kindbtn" id="shellSwKindRace" onclick="shellSwKindSet('race')">レース</button><button type="button" class="sw-kindbtn" id="shellSwKindPractice" onclick="shellSwKindSet('practice')">練習</button></div><div class="stopwatch-btns">
         <button type="button" class="sw-start" id="swStartBtn" onclick="swStart()">スタート</button>
         <button type="button" class="sw-lap" id="swLapBtn" onclick="swLap()" disabled="">ラップ</button>
         <button type="button" class="sw-stop" id="swStopBtn" onclick="swStop()" style="display:none;">ストップ</button>
@@ -12612,7 +12612,7 @@ function shellSoon(name) {
 
 <div id="shellLedgerWrap">
   <div class="lg-inner">
-    <div class="lg-title">モーター台帳</div>
+    <div class="lg-title"></div>
     <div class="lg-count" id="lgCount"></div>
     <div class="lg-controls">
       <select id="lgTypeSel" onchange="ledgerSetFilter(this.value)"></select>
@@ -12999,10 +12999,10 @@ lgLoad();
 
 <div id="shellRunsWrap">
   <div class="rn-inner">
-    <div class="rn-title">走行記録</div>
+    <div class="rn-title"></div>
     
     <div id="rnRunsView">
-    <button type="button" class="rn-backlink" onclick="shellGoCourse()">コース作成・コース管理 ›</button>
+    
     <div class="rn-sub">ストップウォッチの記録がそのまま反映されます。モーターは台帳と紐付け、種別（レース／練習）と完走／アウトはここでも付けられます。コースの作成はランチャーの「コース作成」から。</div>
     <div class="rn-chips">
       <button type="button" class="rn-chip" data-rn-kind="" onclick="runsSetKindFilter('')">すべて</button>
@@ -13286,7 +13286,7 @@ document.addEventListener('change', function(e) {
 
 <div id="shellAnalysisWrap">
   <div class="an-inner">
-    <div class="an-title">解析</div>
+    <div class="an-title"></div>
     <div class="an-sub">タブで分類しています。モーターのランキングは3.0V換算（推定値）。完走率・大会・負けパターンは、走行記録に付けた完走／アウトから集計します。</div>
     <div class="an-tabs" id="anTabs">
       <button type="button" class="an-tab" data-antab="motor" onclick="anShowTab('motor')">モーター</button>
@@ -13678,7 +13678,7 @@ function renderCourses() {
   csLoad();
   var box = document.getElementById('rnCourseView');
   if (!box) return;
-  var h = '<button type="button" class="rn-backlink" onclick="runsShowView(\'runs\')">‹ 走行記録</button>';
+  var h = '';
   if (csDraft) h += csFormHtml();
   else h += '<button type="button" class="cs-btn primary" style="width:100%;margin-bottom:12px" onclick="csNewCourse()">＋ コースを登録</button>';
   if (!csCourses.length && !csDraft) {
@@ -14968,10 +14968,12 @@ function csSimOutText(c) {
   var cfg = csSimCfgFor(c.id);
   var rpm = parseFloat(cfg.rpm);
   if (!rpm || rpm <= 0) return 'RPMを入れてください（台帳のモーターからも選べます）';
-  var lane = csLaneSel(c);
-  var lenM = lane.off === 0 ? c.lengthM : lane.lenCm / 100;
+  var path = csSimPath(c, cfg);
+  if (!path.totalCm) return 'RPMを入れてください（台帳のモーターからも選べます）';
+  var lenM = path.totalCm / 100;
   var r = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, lenM, c.laps || 1);
-  return '速度 約' + r.kmh.toFixed(1) + ' km/h／1周 ' + r.lapSec.toFixed(2) + ' 秒（' + lane.label + '・約' + lenM.toFixed(2) + 'm）／全' + (c.laps || 1) + '周 ' + r.totalSec.toFixed(2) + ' 秒';
+  var segTxt = path.pat.labels.map(function(lab, ix) { return lab + ' ' + (r.lapSec * (path.segLens[ix] / path.totalCm)).toFixed(2) + '秒'; }).join('・');
+  return '速度 約' + r.kmh.toFixed(1) + ' km/h／1周 ' + r.lapSec.toFixed(2) + ' 秒（' + path.pat.labels.join('→') + '・約' + lenM.toFixed(2) + 'm）／全' + (c.laps || 1) + '周 ' + r.totalSec.toFixed(2) + ' 秒<br>区間：' + segTxt;
 }
 function csSimRead(id) {
   var box = document.querySelector('[data-sim="' + id + '"]');
@@ -15645,19 +15647,12 @@ function csSimToggle(id) {
   var card = document.querySelector('.cs-card[data-cid="' + id + '"]');
   var svg = card && card.querySelector('.cs-svgbox svg');
   if (!svg) return;
-  var sim = csSimulate(c.pieces, c.heights);
-  var pts = [];
-  sim.segs.forEach(function(sg) { sg.pts.forEach(function(p) { pts.push(p); }); });
-  pts = csOffsetPts(pts, lane19.off);
+  var path = csSimPath(c, cfg);
+  var pts = path.pts;
   if (pts.length < 2) return;
-  var cum = [0];
-  for (var i = 1; i < pts.length; i++) {
-    var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
-    cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy));
-  }
-  var totalCm = cum[cum.length - 1];
-  var lane19 = csLaneSel(c);
-  var calc = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, lane19.off === 0 ? c.lengthM : lane19.lenCm / 100, c.laps || 1);
+  var cum = path.cum;
+  var totalCm = path.totalCm;
+  var calc = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, totalCm / 100, c.laps || 1);
   var vCm = calc.kmh / 3.6 * 100;
   var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   circle.setAttribute('r', '11');
@@ -15741,24 +15736,27 @@ function csSimHtml(c) {
   var cfg = csSimCfgFor(c.id);
   var h = '<div class="cs-sim" data-sim="' + rnEsc(c.id) + '">';
   h += '<div class="cs-sim-h">🧪 擬似ラン（抵抗・ロスなしの理論値）</div>';
-  h += '<div class="cs-sim-note">⚠ 注意：抵抗・摩擦・コーナーでの減速は考えていません。モーターの速さだけで計算した理論値です。実際のタイムはこれより遅くなります。</div>';
   if (!c.lengthM) { h += '<div class="cs-note">全長が入ると計算できます</div></div>'; return h; }
   var opts = '<option value="">モーターを選ぶとベストRPMが入ります</option>';
   if (typeof lgRows === 'function') {
     lgRows().forEach(function(r) {
       var st = r.stats;
-      if (st && st.best) opts += '<option value="' + st.best + '">' + rnEsc(r.motor) + ' ' + rnEsc(r.name) + '（ベスト ' + st.best.toLocaleString() + '）</option>';
+      var val = (st && st.best) || (r.unit && (r.unit.rpmAfter || r.unit.rpmBefore)) || '';
+      var lab = rnEsc(r.motor) + ' ' + rnEsc(r.name);
+      if (val) opts += '<option value="' + val + '">' + lab + '（' + ((st && st.best) ? 'ベスト ' + st.best.toLocaleString() : '登録 ' + Number(val).toLocaleString()) + '）</option>';
+      else opts += '<option value="" disabled>' + lab + '（記録なし）</option>';
     });
   }
   h += '<div class="cs-simrow"><select class="cs-sim-unit" onchange="csSimUnitPick(\'' + rnEsc(c.id) + '\', this)">' + opts + '</select></div>';
   h += '<div class="cs-simrow"><label>RPM <input type="number" class="cs-sim-rpm" value="' + rnEsc(String(cfg.rpm)) + '" placeholder="30000" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')"></label>' +
     '<label>ギヤ <select class="cs-sim-gear" onchange="csSimUpdate(\'' + rnEsc(c.id) + '\')">' + [3.5, 3.7, 4, 4.2, 5].map(function(g) { return '<option value="' + g + '"' + (Number(cfg.gear) === g ? ' selected' : '') + '>' + g.toFixed(1) + ':1</option>'; }).join('') + '</select></label>' +
     '<label>タイヤ <input type="number" class="cs-sim-tire" step="0.1" value="' + cfg.tire + '" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')">mm</label></div>';
-  h += '<div class="cs-simrow"><span>走る位置</span>' + csLaneBtnsHtml(c) + '</div>';
+  h += '<div class="cs-simrow"><span>走る順番</span>' + csPatternBtnsHtml(c) + '</div>';
   h += '<div class="cs-sim-out" id="csSimOut-' + rnEsc(c.id) + '">' + csSimOutText(c) + '</div>';
   if (c.pieces && c.pieces.length) {
     h += '<div class="cs-simrow"><button type="button" class="cs-simrun" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
-  h += '<div class="cs-simlaps" id="csSimLaps-' + rnEsc(c.id) + '"></div>';
+    h += '<div class="cs-sim-note">⚠ 注意：抵抗・摩擦・コーナーでの減速は考えていません。モーターの速さだけで計算した理論値です。実際のタイムはこれより遅くなります。</div>';
+    h += '<div class="cs-simlaps" id="csSimLaps-' + rnEsc(c.id) + '"></div>';
   }
   h += '</div>';
   return h;
@@ -15796,12 +15794,13 @@ function csFormHtml() {
   var h = '<div class="cs-form">';
   h += '<div class="cs-viewrow" id="csViewRow"></div>';
   h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
-  h += '<div class="cs-ctlrow"><button type="button" class="cs-ctlbtn" onclick="csUndo()">↩ 戻る</button><button type="button" class="cs-ctlbtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ctlbtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ctlbtn" onclick="csClearPieces()">全部消す</button></div>';
+  h += '<div class="cs-ctlrow"><button type="button" class="cs-ctlbtn" onclick="csUndo()">↩ 戻る</button><button type="button" class="cs-ctlbtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ctlbtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ctlbtn" onclick="csClearPieces()">全部消す</button>' + '<select class="cs-ctlbtn" id="csLanesSel" onchange="csSetLanes(this.value)" aria-label="レーン数"><option value="3"' + ((c.lanes || 3) === 3 ? ' selected' : '') + '>3レーン</option><option value="5"' + ((c.lanes || 3) === 5 ? ' selected' : '') + '>5レーン</option></select></div>';
   if (csPhase !== 'detail') {
     h += '<div class="cs-ptabs">' + [['basic', '基本'], ['section', 'セクション'], ['bank', 'バンク']].map(function(t) { return '<button type="button" class="cs-ptab' + (csPalTab === t[0] ? ' on' : '') + '" data-g="' + t[0] + '" onclick="csSetPalTab(\'' + t[0] + '\')">' + t[1] + '</button>'; }).join('') + '</div>';
     h += '<div id="csPalette">' + csPaletteGridHtml(csPalTab) + '</div>';
     h += '<div class="cs-presets">' + CS_PRESETS.map(function(p, i) { return '<button type="button" class="cs-prebtn" onclick="csAddPreset(' + i + ')">' + p.label + '</button>'; }).join('') + '</div>';
-    h += '<div class="cs-seqwrap" id="csSeqChips"></div>';
+    h += '<button type="button" class="cs-seqfold" onclick="csToggleSeqFold()">使用したピース（' + c.pieces.length + '個）' + (csSeqOpen ? ' ▲ たたむ' : ' ▼ 開く') + '</button>';
+    h += '<div class="cs-seqwrap" id="csSeqChips" style="display:' + (csSeqOpen ? 'block' : 'none') + '"></div>';
     h += '<div id="csEditBar"></div>';
     h += '<div class="cs-note">全長はピースの標準長（ストレート54cm・カーブ45°など）からの目安です。特殊セクションは実物と異なる場合があります。高さはスロープで自動で±110mm付き、選んだピースごとに変えられます。</div>';
     h += '<button type="button" class="cs-btn primary cs-complete" onclick="csGoDetail()">作成完了 ▶ 次へ（名前・写真・メモ）</button>';
@@ -16137,13 +16136,7 @@ function shellUseUnitChanged() {
   shellApplyUseUnit(u);
 }
 (function() {
-  var sb = document.getElementById('startBtn');
-  if (sb && sb.parentElement && sb.parentElement.parentElement && !document.getElementById('shellUseUnitBar')) {
-    var bar = document.createElement('div');
-    bar.className = 'shell-useunit'; bar.id = 'shellUseUnitBar';
-    bar.innerHTML = '<span class="suu-lab">使うモーター</span><select id="shellUseUnitSel" onchange="shellUseUnitChanged()"></select>';
-    sb.parentElement.parentElement.insertBefore(bar, sb.parentElement);
-  }
+  // proto25: the use-unit bar is gone (original layout restored); picking lives on the SPEED block tap.
   shellRefreshUseUnits();
   var id = '';
   try { id = localStorage.getItem('shellUseUnitId') || ''; } catch (e) {}
@@ -16267,5 +16260,336 @@ if (typeof window.swAutoSaveHistory === 'function') {
 }
 
 </script>
+
+<style id="shell24Css">
+
+/* ===== proto24: titles off (non-RPM), module button right, share beside it, day tint ===== */
+#shellModBtn { left: auto; right: 12px; transform: none; }
+.rn-title, .lg-title, .an-title { display: none; }
+.rn-sub, .an-sub { padding-right: 124px; }
+.brand-bar .brand-name { margin-left: 0; }
+#shareBtn { margin-right: 124px; }
+.rn-daybody { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 8px; margin-top: 8px; }
+
+</style>
+
+<style id="shell25Css">
+
+/* ===== proto25: taps / folds / nowrap / kind toggle / sim patterns ===== */
+.sw-signal-fs-cancel { top: calc(env(safe-area-inset-top, 0px) + 76px); }
+.stopwatch-btns.sw-navrow > button { white-space: nowrap; }
+.lg-navrow button { white-space: nowrap; font-size: 11px; padding: 8px 1px; letter-spacing: -0.02em; }
+.cs-seqfold { width: 100%; padding: 10px 12px; margin: 4px 0 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: #17181c; color: #fff; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; box-sizing: border-box; }
+.cs-patbtns { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.cs-patbtn { padding: 7px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: #2c2d33; color: #fff; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.cs-patbtn.on { background: #FF7A00; border-color: #FF7A00; font-weight: 700; }
+.shell-modal25 { position: fixed; inset: 0; z-index: 1200; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); }
+.shell-modal25.open { display: flex; }
+.shell-modal25 .sm-card { width: min(92vw, 420px); max-height: 82vh; overflow-y: auto; background: #17181c; border: 1px solid #2a2b31; border-radius: 14px; padding: 16px; color: #fff; box-sizing: border-box; }
+.shell-modal25 .sm-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+.shell-modal25 .sm-unit { display: block; width: 100%; text-align: left; padding: 11px 12px; margin-bottom: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: #2c2d33; color: #fff; font-size: 13.5px; cursor: pointer; }
+.shell-modal25 .sm-unit.on { border-color: #FF7A00; background: rgba(255,122,0,0.15); font-weight: 700; }
+.shell-modal25 .sm-close { display: block; width: 100%; padding: 10px; margin-top: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: none; color: #aeaeb2; font-size: 13px; cursor: pointer; }
+.shell-modal25 .sm-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.shell-modal25 .sm-row label { flex: 0 0 56px; font-size: 12.5px; color: #aeaeb2; }
+.shell-modal25 .sm-row select, .shell-modal25 .sm-row input { flex: 1; min-width: 0; padding: 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: #2c2d33; color: #fff; font-size: 14px; }
+.shell-modal25 .sm-btn { display: block; width: 100%; padding: 11px; margin-bottom: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: #2c2d33; color: #fff; font-size: 13.5px; cursor: pointer; }
+.sw-kindrow { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+.sw-kindrow .sw-kind-lab { font-size: 12px; color: #aeaeb2; white-space: nowrap; }
+.sw-kindbtn { flex: 1; padding: 9px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: #2c2d33; color: #fff; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
+.sw-kindbtn.on { background: #FF7A00; border-color: #FF7A00; font-weight: 700; }
+
+</style>
+
+<script>
+
+// ===== proto25: block taps / module-top reset / SW kind toggle / course analysis / sim patterns =====
+['.rn-title', '.lg-title', '.an-title'].forEach(function(sel) { var el = document.querySelector(sel); if (el) el.textContent = ''; });
+// --- modals (unit picker on SPEED tap, speed adjustment on MOTOR RPM tap) ---
+(function() {
+  var um = document.createElement('div');
+  um.className = 'shell-modal25'; um.id = 'shellUnitModal';
+  um.innerHTML = '<div class="sm-card"><div class="sm-title">使うモーター（台帳の個体）</div><div id="shellUnitList"></div><button type="button" class="sm-close" onclick="shellCloseUnitModal()">閉じる</button></div>';
+  document.body.appendChild(um);
+  var am = document.createElement('div');
+  am.className = 'shell-modal25'; am.id = 'shellAdjModal';
+  am.innerHTML = '<div class="sm-card"><div class="sm-title">速度調整</div>' +
+    '<div class="sm-row"><label>ギヤ比</label><select id="shellAdjGear" onchange="shellAdjSet()">' + ['3.5:1', '3.7:1', '4.0:1', '4.2:1', '5:1', '6.4:1', '11.2:1'].map(function(g) { return '<option value="' + g + '">' + g + '</option>'; }).join('') + '</select></div>' +
+    '<div class="sm-row"><label>タイヤ径</label><input id="shellAdjTire" type="number" step="0.1" inputmode="decimal" onchange="shellAdjSet()"> <span style="font-size:12px;color:#aeaeb2">mm</span></div>' +
+    '<button type="button" class="sm-btn" onclick="shellAdjTarget()">目標RPMを設定する</button>' +
+    '<button type="button" class="sm-btn" onclick="shellAdjMachine()">マシン設定を開く（モーター・個体）</button>' +
+    '<button type="button" class="sm-close" onclick="shellCloseAdjModal()">閉じる</button></div>';
+  document.body.appendChild(am);
+})();
+function shellOpenUnitModal() {
+  var list = document.getElementById('shellUnitList');
+  var cur = '';
+  try { cur = localStorage.getItem('shellUseUnitId') || ''; } catch (e) {}
+  var units = shellLedgerUnits22().filter(function(u) { return u.status !== 'retired'; });
+  var h = '<button type="button" class="sm-unit' + (cur ? '' : ' on') + '" onclick="shellPickUnit(\'\')">選択なし（通常の保存）</button>';
+  h += units.map(function(u) {
+    return '<button type="button" class="sm-unit' + (u.id === cur ? ' on' : '') + '" onclick="shellPickUnit(\'' + u.id + '\')">' + (u.motor || '') + ' ・ ' + (u.name || '名称なし') + (u.no ? '（No.' + u.no + '）' : '') + '</button>';
+  }).join('');
+  if (!units.length) h += '<div style="font-size:12.5px;color:#aeaeb2;padding:4px 2px 8px">台帳に個体がまだ登録されていません。モーター台帳で登録すると、ここで選べます。</div>';
+  list.innerHTML = h;
+  document.getElementById('shellUnitModal').classList.add('open');
+}
+function shellCloseUnitModal() { document.getElementById('shellUnitModal').classList.remove('open'); }
+function shellPickUnit(id) {
+  try { localStorage.setItem('shellUseUnitId', id); } catch (e) {}
+  var u = shellLedgerUnits22().find(function(x) { return x.id === id; }) || null;
+  shellApplyUseUnit(u);
+  shellCloseUnitModal();
+}
+function shellOpenAdjModal() {
+  var ms = window.machineState || {};
+  var g = document.getElementById('shellAdjGear');
+  if (g && ms.gear) g.value = ms.gear;
+  var t = document.getElementById('shellAdjTire');
+  if (t && ms.tire) t.value = ms.tire;
+  document.getElementById('shellAdjModal').classList.add('open');
+}
+function shellCloseAdjModal() { document.getElementById('shellAdjModal').classList.remove('open'); }
+function shellAdjSet() {
+  var ms = window.machineState;
+  if (!ms) return;
+  var g = document.getElementById('shellAdjGear');
+  var t = document.getElementById('shellAdjTire');
+  if (g) ms.gear = g.value;
+  if (t && parseFloat(t.value)) ms.tire = parseFloat(t.value);
+  try { localStorage.setItem('rpmMachine', JSON.stringify(ms)); } catch (e) {}
+  var cg = document.getElementById('capGear'); if (cg && ms.gear) cg.textContent = ms.gear;
+  var ct = document.getElementById('capTire'); if (ct && ms.tire) ct.textContent = Number(ms.tire).toFixed(1) + 'mm';
+  if (typeof window.refreshMachineSummary === 'function') window.refreshMachineSummary();
+  if (typeof window.refreshMachineStatusUI === 'function') window.refreshMachineStatusUI();
+}
+function shellAdjTarget() {
+  shellCloseAdjModal();
+  window.__shellRpmPass = true;
+  document.getElementById('rpmBlock').click();
+}
+function shellAdjMachine() {
+  shellCloseAdjModal();
+  if (window.openMachineModal) window.openMachineModal();
+}
+(function() {
+  var rb = document.getElementById('rpmBlock');
+  if (rb && rb.parentElement) {
+    rb.parentElement.addEventListener('click', function(e) {
+      if (!e.target.closest || !e.target.closest('#rpmBlock')) return;
+      if (window.__shellRpmPass) { window.__shellRpmPass = false; return; }
+      if (e.target.closest('.qmark')) return;
+      e.stopPropagation();
+      shellOpenAdjModal();
+    }, true);
+  }
+  var sb = document.getElementById('speedBlock');
+  if (sb && sb.parentElement) {
+    sb.parentElement.addEventListener('click', function(e) {
+      if (!e.target.closest || !e.target.closest('#speedBlock')) return;
+      if (e.target.closest('.qmark')) return;
+      e.stopPropagation();
+      shellOpenUnitModal();
+    }, true);
+  }
+})();
+// --- entering a module from the launcher lands on its top ---
+var shellGoBase25 = shellGo;
+shellGo = function(m) {
+  shellGoBase25(m);
+  try {
+    if (m === 'sw') {
+      if (typeof swCloseViews === 'function') swCloseViews();
+      var p = document.querySelector('.stopwatch-panel'); if (p) p.scrollTop = 0;
+    } else if (m === 'ledger') {
+      var f = document.getElementById('lgForm'); if (f) f.style.display = 'none';
+      var lw = document.getElementById('shellLedgerWrap'); if (lw) lw.scrollTop = 0;
+    } else if (m === 'runs') {
+      var rw = document.getElementById('shellRunsWrap'); if (rw) rw.scrollTop = 0;
+    } else if (m === 'analysis') {
+      var aw = document.getElementById('shellAnalysisWrap'); if (aw) aw.scrollTop = 0;
+    } else if (m === 'rpm') {
+      window.scrollTo(0, 0);
+    }
+  } catch (e) {}
+};
+// --- SW kind toggle (race / practice) on the main panel ---
+function shellSwKindPaint(k) {
+  var r = document.getElementById('shellSwKindRace'), p = document.getElementById('shellSwKindPractice');
+  if (r) r.classList.toggle('on', k === 'race');
+  if (p) p.classList.toggle('on', k === 'practice');
+}
+function shellSwKindSet(k) {
+  try { localStorage.setItem('signal_sw_kind_default', k); } catch (e) {}
+  shellSwKindPaint(k);
+}
+(function() {
+  var panel = document.querySelector('.stopwatch-panel');
+  var firstRow = panel && panel.querySelector('.stopwatch-btns');
+  if (!panel || !firstRow) return;
+  var row = document.createElement('div');
+  row.className = 'sw-kindrow'; row.id = 'shellSwKindRow';
+  row.innerHTML = '<span class="sw-kind-lab">種別</span><button type="button" class="sw-kindbtn" id="shellSwKindRace" onclick="shellSwKindSet(\'race\')">レース</button><button type="button" class="sw-kindbtn" id="shellSwKindPractice" onclick="shellSwKindSet(\'practice\')">練習</button>';
+  panel.insertBefore(row, firstRow);
+  var cur = '';
+  try { cur = localStorage.getItem('signal_sw_kind_default') || ''; } catch (e) {}
+  if (!cur) { cur = 'practice'; try { localStorage.setItem('signal_sw_kind_default', cur); } catch (e) {} }
+  shellSwKindPaint(cur);
+})();
+// --- analysis: same-course comparisons ---
+function an25CourseData() {
+  var hist = [];
+  try { hist = JSON.parse(localStorage.getItem('signal_sw_history') || '[]'); } catch (e) {}
+  var outcomes = {};
+  try { outcomes = JSON.parse(localStorage.getItem('shellRunOutcomes') || '{}'); } catch (e) {}
+  var byCourse = {};
+  hist.forEach(function(rec) {
+    if (!rec.courseId || outcomes[rec.id] === 'out') return;
+    var c = (typeof csCourseById === 'function') ? csCourseById(rec.courseId) : null;
+    if (!c || !c.lengthM || !rec.totalMs) return;
+    var laps = (rec.laps && rec.laps.length) || c.laps || 1;
+    var kmh = c.lengthM * laps / (rec.totalMs / 1000) * 3.6;
+    var sp = rec.spec || {};
+    (byCourse[c.id] || (byCourse[c.id] = { course: c, runs: [] })).runs.push({
+      motor: sp.motor || '不明', volt: sp.voltage || '', gear: sp.gear || '不明',
+      tire: sp.tire ? String(parseFloat(sp.tire).toFixed(1)) : '', kmh: kmh
+    });
+  });
+  return Object.keys(byCourse).map(function(id) { return byCourse[id]; }).filter(function(g) { return g.runs.length >= 2; });
+}
+function an25Agg(runs, keyFn, labelFn) {
+  var groups = {};
+  runs.forEach(function(r) {
+    var key = keyFn(r);
+    var g = groups[key] || (groups[key] = { label: labelFn(r), n: 0, sum: 0, parts: {} });
+    g.n++; g.sum += r.kmh;
+  });
+  return groups;
+}
+function an25CourseHtml() {
+  var data = an25CourseData();
+  if (!data.length) return anSec('🏁 コース別くらべ（同じコース）', anEmpty('同じコースに紐付いた記録が2件以上貯まると、電圧・モーター・ギヤ・タイヤ径の違いで比べられます。'));
+  var h = '';
+  data.forEach(function(g) {
+    var runs = g.runs;
+    h += '<div class="an-line"><span class="l"><b>' + anEsc(g.course.name) + '</b></span><span class="r">' + runs.length + '件</span></div>';
+    var combos = {};
+    runs.forEach(function(r) {
+      var key = [r.motor, r.volt, r.gear, r.tire].join('|');
+      var o = combos[key] || (combos[key] = { motor: r.motor, volt: r.volt, gear: r.gear, tire: r.tire, n: 0, sum: 0 });
+      o.n++; o.sum += r.kmh;
+    });
+    var list = Object.keys(combos).map(function(k2) { return combos[k2]; }).sort(function(a, b) { return (b.sum / b.n) - (a.sum / a.n); });
+    var top = list[0];
+    h += anVerdict('このコースの最速は「' + anEsc(top.motor) + (top.volt ? '・' + anEsc(top.volt) + 'V' : '') + '・' + anEsc(top.gear) + (top.tire ? '・' + anEsc(top.tire) + 'mm' : '') + '」（平均 ' + (top.sum / top.n).toFixed(1) + ' km/h）です。');
+    list.slice(0, 5).forEach(function(o) {
+      h += '<div class="an-line"><span class="l">' + anEsc(o.motor) + (o.volt ? '・' + anEsc(o.volt) + 'V' : '') + '・' + anEsc(o.gear) + (o.tire ? '・' + anEsc(o.tire) + 'mm' : '') + '</span><span class="r">平均 ' + (o.sum / o.n).toFixed(1) + ' km/h（' + o.n + '件）</span></div>';
+    });
+    var vg = {};
+    runs.forEach(function(r) {
+      if (!r.volt) return;
+      var key = [r.motor, r.gear, r.tire].join('|');
+      var grp = vg[key] || (vg[key] = { motor: r.motor, gear: r.gear, tire: r.tire, volts: {} });
+      var v = grp.volts[r.volt] || (grp.volts[r.volt] = { n: 0, sum: 0 });
+      v.n++; v.sum += r.kmh;
+    });
+    Object.keys(vg).forEach(function(key) {
+      var grp = vg[key];
+      var volts = Object.keys(grp.volts);
+      if (volts.length < 2) return;
+      h += '<div class="an-line"><span class="l">電圧のちがい（' + anEsc(grp.motor) + '・' + anEsc(grp.gear) + (grp.tire ? '・' + anEsc(grp.tire) + 'mm' : '') + '）</span><span class="r">' + volts.sort().map(function(v) { var vv = grp.volts[v]; return v + 'V ' + (vv.sum / vv.n).toFixed(1); }).join(' ／ ') + ' km/h</span></div>';
+    });
+    var mg = {};
+    runs.forEach(function(r) {
+      var key = [r.volt, r.gear, r.tire].join('|');
+      var grp = mg[key] || (mg[key] = { volt: r.volt, gear: r.gear, tire: r.tire, motors: {} });
+      var mm = grp.motors[r.motor] || (grp.motors[r.motor] = { n: 0, sum: 0 });
+      mm.n++; mm.sum += r.kmh;
+    });
+    Object.keys(mg).forEach(function(key) {
+      var grp = mg[key];
+      var motors = Object.keys(grp.motors);
+      if (motors.length < 2) return;
+      h += '<div class="an-line"><span class="l">モーターのちがい（' + (grp.volt ? anEsc(grp.volt) + 'V・' : '') + anEsc(grp.gear) + (grp.tire ? '・' + anEsc(grp.tire) + 'mm' : '') + '）</span><span class="r">' + motors.map(function(mn) { var vv = grp.motors[mn]; return anEsc(mn) + ' ' + (vv.sum / vv.n).toFixed(1); }).join(' ／ ') + ' km/h</span></div>';
+    });
+  });
+  return anSec('🏁 コース別くらべ（同じコース）', h);
+}
+var renderAnalysisBase25 = renderAnalysis;
+renderAnalysis = function() {
+  renderAnalysisBase25();
+  var pm = document.getElementById('anPanelMotor');
+  if (pm) pm.insertAdjacentHTML('beforeend', an25CourseHtml());
+};
+// --- builder helpers: fold used pieces / lane count in the build phase ---
+var csSeqOpen = false;
+function csToggleSeqFold() { csSeqOpen = !csSeqOpen; renderCourses(); }
+function csSetLanes(v) { if (csDraft) { csDraft.lanes = parseInt(v, 10) || 3; renderCourses(); } }
+// --- pseudo run: run through the lanes in a chosen order ---
+function csSimPatterns(c) {
+  var lanes = csLaneInfo(c);
+  var perms;
+  if (lanes.length === 3) perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  else if (lanes.length === 5) perms = [[0, 1, 2, 3, 4], [4, 3, 2, 1, 0], [2, 1, 0, 3, 4], [2, 3, 4, 1, 0]];
+  else perms = [lanes.map(function(_, i) { return i; })];
+  return perms.map(function(p) {
+    return {
+      key: p.join(','),
+      labels: p.map(function(i) { return lanes[i].label; }),
+      short: p.map(function(i) { return lanes[i].label.replace('レーン', ''); }).join('→'),
+      lanes: p.map(function(i) { return lanes[i]; })
+    };
+  });
+}
+function csSimPatternSel(c) {
+  var cfg = csSimCfgFor(c.id);
+  var pats = csSimPatterns(c);
+  for (var i = 0; i < pats.length; i++) if (pats[i].key === cfg.pat) return pats[i];
+  return pats[0];
+}
+function csPatternBtnsHtml(c) {
+  var sel = csSimPatternSel(c);
+  return '<span class="cs-patbtns">' + csSimPatterns(c).map(function(p) {
+    return '<button type="button" class="cs-patbtn' + (p.key === sel.key ? ' on' : '') + '" onclick="csSimPattern(\'' + c.id + '\',\'' + p.key + '\')">' + p.short + '</button>';
+  }).join('') + '</span>';
+}
+function csSimPattern(id, key) {
+  csSimStop(id);
+  csSimRead(id);
+  csSimCfgFor(id).pat = key;
+  renderCourses();
+}
+function csSimPath(c, cfg) {
+  var sim = csSimulate(c.pieces, c.heights);
+  var base = [];
+  sim.segs.forEach(function(sg) { sg.pts.forEach(function(p) { base.push(p); }); });
+  var pat = csSimPatternSel(c);
+  var offs = pat.lanes.map(function(L) { return csOffsetPts(base, L.off); });
+  var M = base.length, N = pat.lanes.length;
+  var pts = [];
+  for (var j = 0; j < M; j++) {
+    var f = M === 1 ? 0 : j / (M - 1);
+    var sf = f * N;
+    var i0 = Math.min(N - 1, Math.floor(sf));
+    var fr = sf - i0;
+    var blend = (i0 < N - 1 && fr > 0.8) ? (fr - 0.8) / 0.2 : 0;
+    var a = offs[i0][j], b = offs[Math.min(N - 1, i0 + 1)][j];
+    pts.push([a[0] + (b[0] - a[0]) * blend, a[1] + (b[1] - a[1]) * blend]);
+  }
+  var cum = [0];
+  for (var j2 = 1; j2 < pts.length; j2++) {
+    var dx = pts[j2][0] - pts[j2 - 1][0], dy = pts[j2][1] - pts[j2 - 1][1];
+    cum.push(cum[j2 - 1] + Math.sqrt(dx * dx + dy * dy));
+  }
+  var totalCm = cum[cum.length - 1] || 0;
+  var segLens = [];
+  for (var si = 0; si < N; si++) {
+    var ja = Math.round(si / N * (M - 1)), jb = Math.round((si + 1) / N * (M - 1));
+    segLens.push(Math.max(0, (cum[jb] || 0) - (cum[ja] || 0)));
+  }
+  return { pts: pts, cum: cum, totalCm: totalCm, segLens: segLens, pat: pat };
+}
+
+</script><div class="shell-modal25" id="shellUnitModal"><div class="sm-card"><div class="sm-title">使うモーター（台帳の個体）</div><div id="shellUnitList"></div><button type="button" class="sm-close" onclick="shellCloseUnitModal()">閉じる</button></div></div><div class="shell-modal25" id="shellAdjModal"><div class="sm-card"><div class="sm-title">速度調整</div><div class="sm-row"><label>ギヤ比</label><select id="shellAdjGear" onchange="shellAdjSet()"><option value="3.5:1">3.5:1</option><option value="3.7:1">3.7:1</option><option value="4.0:1">4.0:1</option><option value="4.2:1">4.2:1</option><option value="5:1">5:1</option><option value="6.4:1">6.4:1</option><option value="11.2:1">11.2:1</option></select></div><div class="sm-row"><label>タイヤ径</label><input id="shellAdjTire" type="number" step="0.1" inputmode="decimal" onchange="shellAdjSet()"> <span style="font-size:12px;color:#aeaeb2">mm</span></div><button type="button" class="sm-btn" onclick="shellAdjTarget()">目標RPMを設定する</button><button type="button" class="sm-btn" onclick="shellAdjMachine()">マシン設定を開く（モーター・個体）</button><button type="button" class="sm-close" onclick="shellCloseAdjModal()">閉じる</button></div></div>
 
 </body></html>
