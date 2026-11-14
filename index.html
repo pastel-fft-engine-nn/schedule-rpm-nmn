@@ -2356,6 +2356,22 @@ body.shell-at-rpm #shellModBtn, body.shell-at-sw #shellModBtn, body.shell-at-led
 .rn-backlink { display: inline-block; margin: 0 0 10px; padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: #242426; color: #d6d6da; font-size: 12.5px; cursor: pointer; }
 
 </style>
+<style id="shell19Css">
+
+/* ===== proto19: palette tabs / form title / analysis fold / SW bits ===== */
+.cs-ptab { background: #37455c; border-color: #54678a; color: #dbe7ff; }
+.cs-ptab.on { background: #FF7A00; border-color: #FF7A00; color: #fff; }
+.cs-formtitle { font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 8px; }
+.cs-lanebtn { padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: #2c2c2e; color: #d6d6da; font-size: 12.5px; cursor: pointer; }
+.cs-lanebtn.on { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
+.anf-titlebtn { width: 100%; text-align: left; background: none; border: none; color: #fff; font-size: 14px; font-weight: 700; padding: 2px 0; cursor: pointer; }
+.stopwatch-btns.sw-navrow > button { flex: 1 1 0; }
+.sw-runs-btn { background: #3a3a3c; color: #fff; padding: 10px 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); font-size: 13px; cursor: pointer; }
+.sw-kindbar { display: flex; gap: 6px; margin: 10px 0 4px; }
+.sw-kindbtn { flex: 1; padding: 7px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: #2c2c2e; color: #d6d6da; font-size: 12.5px; cursor: pointer; }
+.sw-kindbtn.on { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
+
+</style>
 </head>
 <body class="load-zero theme-classic shell-at-rpm">
 <div class="app-shell">
@@ -10486,12 +10502,12 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="stopwatch-btns">
         <button type="button" class="sw-signal" id="swSignalBtn" onclick="swStartWithSignal()">合図＋計測</button>
         <button type="button" class="sw-signal-only" id="swSignalOnlyBtn" onclick="swSignalOnly()">シグナルのみ</button>
-      </div>
-      <div class="stopwatch-btns">
+      </div><div class="stopwatch-laps" id="swLaps"></div>
+      <div class="stopwatch-btns sw-navrow">
         <button type="button" class="sw-history-btn" id="swHistoryBtn" onclick="swOpenHistory()">📋 履歴</button>
         <button type="button" class="sw-settings-btn" id="swSettingsBtn" onclick="swOpenSettings()">⚙️ 設定</button>
         <button type="button" class="sw-reset" onclick="swReset()">リセット</button>
-      </div>
+      <button type="button" id="swRunsBtn" class="sw-runs-btn">走行記録</button></div>
       <div class="stopwatch-btns">
         <button type="button" class="sw-photo-stock-btn" id="swStockBtn" onclick="swPickStockPhoto()">📷 写真をストック</button>
       </div>
@@ -10506,7 +10522,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
         <div class="sw-stock-head" id="swStockHead"></div>
         <div class="sw-stock-thumbs" id="swStockThumbs"></div>
       </div>
-      <div class="stopwatch-laps" id="swLaps"></div>
+      
 
       <p style="font-size:11px;color:#8e8e93;text-align:center;margin-top:10px;">単位は秒です。ベストラップも自動で更新します。</p>
       <p id="swVersionLabel" style="font-size:12px;color:#636366;text-align:center;margin-top:16px;">v22</p>
@@ -10540,7 +10556,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
         <select id="swFilterVoltage" onchange="swHistoryFilterChanged()"></select>
         <select id="swFilterTire" onchange="swHistoryFilterChanged()"></select>
       </div>
-      <div id="swHistoryList"><div class="sw-history-empty">まだ履歴がありません。計測してストップすると自動で保存されます。</div></div>
+      <div id="swKindBar" class="sw-kindbar"><button type="button" class="sw-kindbtn on" data-k="all" onclick="swSetKindFilter('all')">すべて</button><button type="button" class="sw-kindbtn" data-k="レース" onclick="swSetKindFilter('レース')">レース</button><button type="button" class="sw-kindbtn" data-k="練習" onclick="swSetKindFilter('練習')">練習</button></div><div id="swHistoryList"><div class="sw-history-empty">まだ履歴がありません。計測してストップすると自動で保存されます。</div></div>
       <p class="sw-history-note">ストップすると、その回のタイムとラップが自動で保存され、あわせてGPSで場所も記録します（取れない環境では場所なしになります）。保存先はこの端末のブラウザ内です（保存数・文字数・写真は端末の容量しだい）。</p>
     </div>
   </div>
@@ -10712,7 +10728,7 @@ function swGetBuiltinAudio(kind) {
     return swTickAudio;
   } catch (e) { return null; }
 }
-var SW_STEP_MS = 1200;
+var SW_STEP_MS = 1000;
 function swRandomGoMs() { return 700 + Math.random() * 2100; }
 var swSignalBusy = false;
 var swAutoRepeatMs = 60000;
@@ -11198,7 +11214,7 @@ if (pattern === 'allred') {
     var hint = document.getElementById('swSignalFsHint');
     if (useFullscreen && hint) hint.textContent = '合図中…';
 
-    // カウントダウン: 丸の数だけ、1.2秒ごとに赤を1つずつ増やす
+    // カウントダウン: 丸の数だけ、1秒ごとに赤を1つずつ増やす
     for (var ci = 1; ci <= sigCount; ci++) {
       (function(n) {
         swSignalTimers.push(setTimeout(function() {
@@ -13935,7 +13951,8 @@ function an7FilterHtml(tab) {
     return '<div class="anf-f"><label>' + fd[1] + '</label><select onchange="an7SetFilter(\'' + tab + '\',\'' + key + '\',this.value)">' + opts + '</select></div>';
   }).join('');
   var title = tab === 'outs' ? '負けパターンを絞り込み' : (tab === 'event' ? '大会を絞り込み' : '条件を指定して分析');
-  return '<div class="anf-panel"><div class="anf-title">' + title + '</div><div class="anf-grid">' + fields + '</div><button type="button" class="anf-reset" onclick="an7ResetFilter(\'' + tab + '\')">条件リセット</button></div>';
+  var open19 = !!an7FilOpen[tab];
+  return '<div class="anf-panel"><button type="button" class="anf-titlebtn" onclick="an7ToggleFilter(\'' + tab + '\')">' + title + (open19 ? ' \u25BE' : ' \u25B8') + '</button><div class="anf-body" style="display:' + (open19 ? '' : 'none') + '"><div class="anf-grid">' + fields + '</div><button type="button" class="anf-reset" onclick="an7ResetFilter(\'' + tab + '\')">条件リセット</button></div></div>';
 }
 function an7SetFilter(tab, key, val) { if (val) an7F[tab][key] = val; else delete an7F[tab][key]; an7RenderTab(tab); }
 function an7ResetFilter(tab) { an7F[tab] = {}; an7RenderTab(tab); }
@@ -14690,8 +14707,7 @@ function csViewBtnsHtml(kind, id) {
     var oc = kind === 'b' ? "csSetView('" + v[0] + "')" : "csSetCardView('" + id + "','" + v[0] + "')";
     return '<button type="button" class="cs-vbtn' + (cur === v[0] ? ' on' : '') + '" onclick="' + oc + '">' + v[1] + '</button>';
   }).join('');
-  var cap = cur === 'top' ? '真上から（上が北）' : '真横から（高さは3倍に強調）';
-  return btns + '<span class="cs-viewcap">' + cap + '</span>';
+  return btns;
 }
 function csSetView(v) { csView = v; csRenderBuilder(); }
 function csSetCardView(id, v) { csCardViews[id] = v; renderCourses(); }
@@ -14937,8 +14953,10 @@ function csSimOutText(c) {
   var cfg = csSimCfgFor(c.id);
   var rpm = parseFloat(cfg.rpm);
   if (!rpm || rpm <= 0) return 'RPMを入れてください（台帳のモーターからも選べます）';
-  var r = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, c.lengthM, c.laps || 1);
-  return '速度 約' + r.kmh.toFixed(1) + ' km/h／1周 ' + r.lapSec.toFixed(2) + ' 秒／全' + (c.laps || 1) + '周 ' + r.totalSec.toFixed(2) + ' 秒';
+  var lane = csLaneSel(c);
+  var lenM = lane.off === 0 ? c.lengthM : lane.lenCm / 100;
+  var r = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, lenM, c.laps || 1);
+  return '速度 約' + r.kmh.toFixed(1) + ' km/h／1周 ' + r.lapSec.toFixed(2) + ' 秒（' + lane.label + '・約' + lenM.toFixed(2) + 'm）／全' + (c.laps || 1) + '周 ' + r.totalSec.toFixed(2) + ' 秒';
 }
 function csSimRead(id) {
   var box = document.querySelector('[data-sim="' + id + '"]');
@@ -15615,6 +15633,7 @@ function csSimToggle(id) {
   var sim = csSimulate(c.pieces, c.heights);
   var pts = [];
   sim.segs.forEach(function(sg) { sg.pts.forEach(function(p) { pts.push(p); }); });
+  pts = csOffsetPts(pts, lane19.off);
   if (pts.length < 2) return;
   var cum = [0];
   for (var i = 1; i < pts.length; i++) {
@@ -15622,7 +15641,8 @@ function csSimToggle(id) {
     cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy));
   }
   var totalCm = cum[cum.length - 1];
-  var calc = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, c.lengthM, c.laps || 1);
+  var lane19 = csLaneSel(c);
+  var calc = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, lane19.off === 0 ? c.lengthM : lane19.lenCm / 100, c.laps || 1);
   var vCm = calc.kmh / 3.6 * 100;
   var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   circle.setAttribute('r', '11');
@@ -15719,6 +15739,7 @@ function csSimHtml(c) {
   h += '<div class="cs-simrow"><label>RPM <input type="number" class="cs-sim-rpm" value="' + rnEsc(String(cfg.rpm)) + '" placeholder="30000" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')"></label>' +
     '<label>ギヤ <select class="cs-sim-gear" onchange="csSimUpdate(\'' + rnEsc(c.id) + '\')">' + [3.5, 3.7, 4, 4.2, 5].map(function(g) { return '<option value="' + g + '"' + (Number(cfg.gear) === g ? ' selected' : '') + '>' + g.toFixed(1) + ':1</option>'; }).join('') + '</select></label>' +
     '<label>タイヤ <input type="number" class="cs-sim-tire" step="0.1" value="' + cfg.tire + '" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')">mm</label></div>';
+  h += '<div class="cs-simrow"><span>走る位置</span>' + csLaneBtnsHtml(c) + '</div>';
   h += '<div class="cs-sim-out" id="csSimOut-' + rnEsc(c.id) + '">' + csSimOutText(c) + '</div>';
   if (c.pieces && c.pieces.length) {
     h += '<div class="cs-simrow"><button type="button" class="cs-simrun" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
@@ -15757,7 +15778,7 @@ csEditCourse = function(id) { csPhase = 'build'; csEditCourseBase16(id); };
 function csFormHtml() {
   var c = csDraft;
   var kindOpts = CS_KINDS.map(function(k) { return '<option value="' + k + '"' + (c.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
-  var h = '<div class="cs-form"><h3>' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3>';
+  var h = '<h3 class="cs-formtitle">' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3><div class="cs-form">';
   h += '<div class="cs-viewrow" id="csViewRow"></div>';
   h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
   h += '<div class="cs-ctlrow"><button type="button" class="cs-ctlbtn" onclick="csUndo()">↩ 戻る</button><button type="button" class="cs-ctlbtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ctlbtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ctlbtn" onclick="csClearPieces()">全部消す</button></div>';
@@ -15805,6 +15826,128 @@ runsShowView = function(v) {
   runsShowViewBase18(v);
   var t = document.querySelector('.rn-title');
   if (t) t.textContent = v === 'courses' ? 'コース' : '走行記録';
+};
+
+</script>
+
+<script>
+
+// ===== proto19: lane positions / SW layout / kind filter / folded analysis filters =====
+function csOffsetPts(pts, o) {
+  if (!o) return pts;
+  return pts.map(function(p, i) {
+    var a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+    var dx = b[0] - a[0], dy = b[1] - a[1];
+    var l = Math.sqrt(dx * dx + dy * dy) || 1;
+    return [p[0] + (-dy / l) * o, p[1] + (dx / l) * o, p[2]];
+  });
+}
+function csPathLenCm(pts) {
+  var t = 0;
+  for (var i = 1; i < pts.length; i++) {
+    var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
+    t += Math.sqrt(dx * dx + dy * dy);
+  }
+  return t;
+}
+function csLaneInfo(c) {
+  var sim = csSimulate(c.pieces, c.heights);
+  var pts = [];
+  sim.segs.forEach(function(sg) { sg.pts.forEach(function(p) { pts.push(p); }); });
+  var lanes = c.lanes || 3;
+  var offs = lanes === 5 ? [-23, -11.5, 0, 11.5, 23] : [-11.5, 0, 11.5];
+  var arr = offs.map(function(o) { return { off: o, lenCm: csPathLenCm(csOffsetPts(pts, o)) }; });
+  arr.sort(function(a, b) { return a.lenCm - b.lenCm; });
+  return arr.map(function(e, i) {
+    var label = lanes === 5 ? ('レーン' + (i + 1)) : (i === 0 ? '内' : i === 1 ? '中' : '外');
+    return { key: 'L' + i, label: label, off: e.off, lenCm: e.lenCm };
+  });
+}
+function csLaneSel(c) {
+  var infos = csLaneInfo(c);
+  var cfg = csSimCfgFor(c.id);
+  for (var i = 0; i < infos.length; i++) if (infos[i].key === cfg.lane) return infos[i];
+  for (var j = 0; j < infos.length; j++) if (infos[j].off === 0) return infos[j];
+  return infos[0];
+}
+function csLaneBtnsHtml(c) {
+  var sel = csLaneSel(c);
+  return csLaneInfo(c).map(function(e) {
+    return '<button type="button" class="cs-lanebtn' + (e.key === sel.key ? ' on' : '') + '" onclick="csSimLane(\'' + c.id + '\',\'' + e.key + '\')">' + e.label + '</button>';
+  }).join('');
+}
+function csSimLane(id, key) {
+  csSimStop(id);
+  csSimRead(id);
+  csSimCfgFor(id).lane = key;
+  renderCourses();
+}
+// --- stopwatch: laps under the signal buttons, runs button in the nav row, kind filter ---
+(function() {
+  var lapsEl = document.getElementById('swLaps');
+  var sigBtn = document.getElementById('swSignalBtn');
+  if (lapsEl && sigBtn) {
+    var row = sigBtn.closest('.stopwatch-btns');
+    if (row && row.parentNode) row.parentNode.insertBefore(lapsEl, row.nextSibling);
+  }
+  var histBtn = document.getElementById('swHistoryBtn');
+  if (histBtn && !document.getElementById('swRunsBtn')) {
+    var nrow = histBtn.closest('.stopwatch-btns');
+    if (nrow) {
+      nrow.classList.add('sw-navrow');
+      var rb = document.createElement('button');
+      rb.type = 'button'; rb.id = 'swRunsBtn'; rb.className = 'sw-runs-btn'; rb.textContent = '走行記録';
+      rb.onclick = function() { shellGoRuns(); };
+      nrow.appendChild(rb);
+    }
+  }
+  var hlist = document.getElementById('swHistoryList');
+  if (hlist && hlist.parentNode && !document.getElementById('swKindBar')) {
+    var bar = document.createElement('div');
+    bar.id = 'swKindBar'; bar.className = 'sw-kindbar';
+    bar.innerHTML = '<button type="button" class="sw-kindbtn" data-k="all" onclick="swSetKindFilter(\'all\')">すべて</button>' +
+      '<button type="button" class="sw-kindbtn" data-k="レース" onclick="swSetKindFilter(\'レース\')">レース</button>' +
+      '<button type="button" class="sw-kindbtn" data-k="練習" onclick="swSetKindFilter(\'練習\')">練習</button>';
+    hlist.parentNode.insertBefore(bar, hlist);
+  }
+})();
+var swKindFilter = 'all';
+try { swKindFilter = localStorage.getItem('signal_sw_kind_filter') || 'all'; } catch (e) {}
+function swRefreshKindBar() {
+  var btns = document.querySelectorAll('.sw-kindbtn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('on', btns[i].getAttribute('data-k') === swKindFilter);
+}
+function swSetKindFilter(k) {
+  swKindFilter = k;
+  try { localStorage.setItem('signal_sw_kind_filter', k); } catch (e) {}
+  if (typeof renderSwHistory === 'function') renderSwHistory();
+  swRefreshKindBar();
+}
+var renderSwHistoryBase19 = renderSwHistory;
+renderSwHistory = function() {
+  renderSwHistoryBase19();
+  swRefreshKindBar();
+  if (swKindFilter === 'all') return;
+  var hist = [];
+  try { hist = JSON.parse(localStorage.getItem('signal_sw_history') || '[]'); } catch (e) {}
+  var byId = {};
+  hist.forEach(function(r) { byId[r.id] = r; });
+  var cards = document.querySelectorAll('#swHistoryList [data-rec-id]');
+  for (var i = 0; i < cards.length; i++) {
+    var rec = byId[cards[i].getAttribute('data-rec-id')];
+    var kind = rec ? (rec.kind || '練習') : '練習';
+    cards[i].style.display = kind === swKindFilter ? '' : 'none';
+  }
+};
+// --- analysis: filters start folded on every entry / tab switch ---
+var an7FilOpen = {};
+function an7ToggleFilter(tab) { an7FilOpen[tab] = !an7FilOpen[tab]; renderAnalysis(); }
+var shellGoBase19 = shellGo;
+shellGo = function(m) { if (m === 'analysis') an7FilOpen = {}; shellGoBase19(m); };
+var anShowTabBase19 = anShowTab;
+anShowTab = function(name) {
+  if (typeof anTabCur !== 'undefined' && name !== anTabCur) an7FilOpen = {};
+  anShowTabBase19(name);
 };
 
 </script>
