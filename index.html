@@ -10432,7 +10432,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
 </style>
 
 <div id="shellLauncher" role="dialog" aria-label="ツール選択">
-  <div class="shell-brand">
+  <button type="button" id="shellChangesBtn27">🧪 テスト期間中：変更内容一覧</button><div class="shell-brand">
     <div class="shell-brand-name">RPM<span class="shell-brand-accent">memory</span></div>
     <div class="shell-brand-sub">Yo, pick your poison.</div>
   </div>
@@ -10477,7 +10477,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
   </div>
   <div class="shell-note" id="shellNote"></div>
   <div class="shell-foot">起動時の画面は上の設定で選べます</div>
-<div id="shellBuildStamp" style="text-align: center; color: rgb(138, 143, 152); font-size: 11px; padding: 10px 0px 26px;">shell proto26</div></div>
+<div id="shellBuildStamp" style="text-align: center; color: rgb(138, 143, 152); font-size: 11px; padding: 10px 0px 26px;">shell proto28</div></div>
 <button type="button" id="shellHomeBtn" onclick="shellHome()">‹ ホーム</button>
 <button type="button" id="shellModBtn" onclick="shellHome()">モジュール</button>
 <div id="shellSwWrap">
@@ -10504,14 +10504,14 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
         <button type="button" class="sw-signal" id="swSignalBtn" onclick="swStartWithSignal()">合図＋計測</button>
         <button type="button" class="sw-signal-only" id="swSignalOnlyBtn" onclick="swSignalOnly()">シグナルのみ</button>
       </div><div class="stopwatch-laps" id="swLaps"></div>
-      <div class="stopwatch-btns sw-navrow">
+      <div class="stopwatch-btns">
+        <button type="button" class="sw-photo-stock-btn" id="swStockBtn" onclick="swPickStockPhoto()">📷 写真をストック</button>
+      </div><div class="stopwatch-btns sw-navrow">
         <button type="button" class="sw-history-btn" id="swHistoryBtn" onclick="swOpenHistory()">📋 履歴</button>
         <button type="button" class="sw-settings-btn" id="swSettingsBtn" onclick="swOpenSettings()">⚙️ 設定</button>
         <button type="button" class="sw-reset" onclick="swReset()">リセット</button>
       <button type="button" id="swRunsBtn" class="sw-runs-btn" onclick="shellGoRuns()">走行記録</button></div>
-      <div class="stopwatch-btns">
-        <button type="button" class="sw-photo-stock-btn" id="swStockBtn" onclick="swPickStockPhoto()">📷 写真をストック</button>
-      </div>
+      
       <div class="stopwatch-btns">
         <button type="button" class="sw-reaction-btn" id="swReactionBtn" onclick="swOpenReaction()">⚡ 反応時間チャレンジ</button>
       </div>
@@ -13115,7 +13115,10 @@ function rnRowHtml(rec) {
   }
   h += '<div class="rn-outrow"><span class="lbl">結果：</span>';
   h += '<button type="button" class="rn-obtn' + (oc === 'finish' ? ' on-finish' : '') + '" onclick="runsSetOutcome(\'' + rnEsc(id) + '\',\'finish\')">完走</button>';
-  h += '<button type="button" class="rn-obtn' + (oc === 'out' ? ' on-out' : '') + '" onclick="runsSetOutcome(\'' + rnEsc(id) + '\',\'out\')">アウト</button></div>';
+  h += '<button type="button" class="rn-obtn' + (oc === 'out' ? ' on-out' : '') + '" onclick="runsSetOutcome(\'' + rnEsc(id) + '\',\'out\')>アウト</button></div>';
+    h += '<div class="rn-outrow"><span class="lbl">種別：</span>';
+    h += '<button type="button" class="rn-obtn' + (rec.kind === 'race' ? ' on-finish' : '') + '" onclick="runsSetKind27(\'' + rnEsc(id) + '\',\'race\')">レース</button>';
+    h += '<button type="button" class="rn-obtn' + (rec.kind === 'practice' ? ' on-finish' : '') + '" onclick="runsSetKind27(\'' + rnEsc(id) + '\',\'practice\')">練習</button></div>';
   if (sp.motor) h += '<button type="button" class="rn-link" onclick="runsOpenLedger(\'' + rnEsc(sp.motor) + '\',\'' + rnEsc(rec.unitName || '') + '\')">このモーターを台帳で見る</button>';
   h += '</div></div>';
   return h;
@@ -14967,9 +14970,9 @@ function csSimHtml(c) {
 function csSimOutText(c) {
   var cfg = csSimCfgFor(c.id);
   var rpm = parseFloat(cfg.rpm);
-  if (!rpm || rpm <= 0) return 'RPMを入れてください（台帳のモーターからも選べます）';
+  if (!rpm || rpm <= 0) return 'RPM入力もしくはプルダウンからモーター選択';
   var path = csSimPath(c, cfg);
-  if (!path.totalCm) return 'RPMを入れてください（台帳のモーターからも選べます）';
+  if (!path.totalCm) return 'RPM入力もしくはプルダウンからモーター選択';
   var lenM = path.totalCm / 100;
   var r = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, lenM, c.laps || 1);
   var segTxt = path.pat.labels.map(function(lab, ix) { return lab + ' ' + (r.lapSec * (path.segLens[ix] / path.totalCm)).toFixed(2) + '秒'; }).join('・');
@@ -15460,7 +15463,7 @@ function csCardHtml(c) {
   if (st.best != null) h += '／ベスト ' + ((typeof rnFmtMs === 'function') ? rnFmtMs(st.best) : (st.best / 1000).toFixed(3)) + ' 秒';
   if (st.judged) h += '／完走率 ' + (st.fin / st.judged * 100).toFixed(1) + '%（' + st.fin + '/' + st.judged + '）';
   h += '</div>';
-  h += '<div class="cs-linkrow"><button type="button" class="cs-linkbtn" onclick="shellGo(\'sw\')">⏱ ストップウォッチで測る</button><button type="button" class="cs-linkbtn" onclick="shellGo(\'ledger\')">📒 モーター台帳</button></div>';
+  h += (c.pieces && c.pieces.length) ? '<div class="cs-linkrow"><button type="button" class="cs-linkbtn cs-runbtn" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button></div>' : '';
   h += csSimHtml(c);
   h += '<div class="cs-btnrow"><button type="button" class="cs-btn" onclick="csEditCourse(\'' + rnEsc(c.id) + '\')">編集</button>';
   h += '<button type="button" class="cs-btn" style="color:#ff6961" onclick="csDeleteCourse(\'' + rnEsc(c.id) + '\')">削除</button></div>';
@@ -15754,7 +15757,7 @@ function csSimHtml(c) {
   h += '<div class="cs-simrow"><span>走る順番</span>' + csPatternBtnsHtml(c) + '</div>';
   h += '<div class="cs-sim-out" id="csSimOut-' + rnEsc(c.id) + '">' + csSimOutText(c) + '</div>';
   if (c.pieces && c.pieces.length) {
-    h += '<div class="cs-simrow"><button type="button" class="cs-simrun" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
+    h += '<div class="cs-simrow"><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
     h += '<div class="cs-sim-note">⚠ 注意：抵抗・摩擦・コーナーでの減速は考えていません。モーターの速さだけで計算した理論値です。実際のタイムはこれより遅くなります。</div>';
     h += '<div class="cs-simlaps" id="csSimLaps-' + rnEsc(c.id) + '"></div>';
   }
@@ -16591,7 +16594,7 @@ function csSimPath(c, cfg) {
   return { pts: pts, cum: cum, totalCm: totalCm, segLens: segLens, pat: pat };
 }
 
-</script><div class="shell-modal25" id="shellUnitModal"><div class="sm-card"><div class="sm-title">使うモーター（台帳の個体）</div><div id="shellUnitList"></div><button type="button" class="sm-close" onclick="shellCloseUnitModal()">閉じる</button></div></div><div class="shell-modal25" id="shellAdjModal"><div class="sm-card"><div class="sm-title">速度調整</div><div class="sm-row"><label>ギヤ比</label><select id="shellAdjGear" onchange="shellAdjSet()"><option value="3.5:1">3.5:1</option><option value="3.7:1">3.7:1</option><option value="4.0:1">4.0:1</option><option value="4.2:1">4.2:1</option><option value="5:1">5:1</option><option value="6.4:1">6.4:1</option><option value="11.2:1">11.2:1</option></select></div><div class="sm-row"><label>タイヤ径</label><input id="shellAdjTire" type="number" step="0.1" inputmode="decimal" onchange="shellAdjSet()"> <span style="font-size:12px;color:#aeaeb2">mm</span></div><button type="button" class="sm-btn" onclick="shellAdjTarget()">目標RPMを設定する</button><button type="button" class="sm-btn" onclick="shellAdjMachine()">マシン設定を開く（モーター・個体）</button><button type="button" class="sm-close" onclick="shellCloseAdjModal()">閉じる</button></div></div>
+</script><div class="shell-modal25" id="shellUnitModal"><div class="sm-card"><div class="sm-title">使うモーター（台帳の個体）</div><div id="shellUnitList"></div><button type="button" class="sm-close" onclick="shellCloseUnitModal()">閉じる</button></div></div>
 
 <script>
 // ===== AUDIT FIXES proto26 =====
@@ -16694,11 +16697,332 @@ if (typeof csSaveForm === 'function') {
     var d = document.createElement('div');
     d.id = 'shellBuildStamp';
     d.style.cssText = 'text-align:center;color:#8a8f98;font-size:11px;padding:10px 0 26px;';
-    d.textContent = 'shell proto26';
+    d.textContent = 'shell proto28';
     l.appendChild(d);
   }
 })();
 </script>
 
 
-</body></html>
+<style>
+.an-sec .an-h { cursor: pointer; }
+.an-sec .an-h::after { content: ' ▼'; font-size: 10px; color: #8a8f98; }
+.an-sec.open .an-h::after { content: ' ▲'; }
+.cs-runbtn { flex: 1 1 auto !important; background: #ff7a00 !important; color: #fff !important; border-color: #ff7a00 !important; font-weight: 700; }
+.cs-lapsfold { width: 100%; margin-top: 6px; padding: 7px 10px; border-radius: 9px; border: 1px solid #3a3b41; background: #17181c; color: #e8e9eb; font-size: 12px; }
+.shell-unit-sel, .shell-unit-inp { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 10px; border: 1px solid #3a3b41; background: #17181c; color: #fff; font-size: 14px; margin: 4px 0 8px; }
+.shell-unit-note { color: #9a9ea6; font-size: 12px; margin: 2px 0 8px; line-height: 1.5; }
+.shell-wn { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.62); padding: 18px; box-sizing: border-box; }
+.shell-wn-card { background: #17181c; border: 1px solid #3a3b41; border-radius: 16px; max-width: 520px; width: 100%; max-height: 78vh; overflow: auto; padding: 18px; color: #e8e9eb; }
+.shell-wn-card h3 { margin: 0 0 10px; font-size: 16px; }
+.shell-wn-card li { margin: 5px 0; font-size: 13px; line-height: 1.55; }
+.shell-wn-close { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-radius: 11px; background: #ff7a00; color: #fff; font-weight: 700; font-size: 14px; }
+#shellChangesBtn27 { display: block; width: 100%; margin: 0 0 12px; padding: 11px; border-radius: 12px; border: 1px dashed #ff7a00; background: rgba(255,122,0,.10); color: #ffb066; font-size: 13px; font-weight: 700; }
+</style>
+
+<script>
+// ===== proto27 =====
+// --- runs: set/clear kind from the record detail ---
+function runsSetKind27(id, kind) {
+  try {
+    var h = JSON.parse(localStorage.getItem('signal_sw_history') || '[]');
+    if (!Array.isArray(h)) return;
+    var rec = null;
+    h.forEach(function(r) { if (String(r.id) === String(id)) rec = r; });
+    if (!rec) return;
+    rec.kind = (rec.kind === kind) ? '' : kind;
+    localStorage.setItem('signal_sw_history', JSON.stringify(h));
+    if (Array.isArray(window.swHistory)) {
+      window.swHistory.forEach(function(r) { if (String(r.id) === String(id)) r.kind = rec.kind; });
+    }
+    if (typeof renderRuns === 'function') renderRuns();
+  } catch (e) {}
+}
+
+// --- analysis: every section starts folded; tap the header to open ---
+function shellFoldAnalysis27() {
+  document.querySelectorAll('#shellAnalysisWrap .an-sec').forEach(function(sec) {
+    if (sec.getAttribute('data-fold27')) return;
+    var head = sec.querySelector('.an-h');
+    if (!head) return;
+    sec.setAttribute('data-fold27', '1');
+    var body = document.createElement('div');
+    body.className = 'an-sec-body';
+    body.style.display = 'none';
+    var node = head.nextSibling;
+    while (node) { var nxt = node.nextSibling; body.appendChild(node); node = nxt; }
+    sec.appendChild(body);
+    head.addEventListener('click', function() {
+      var open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : '';
+      sec.classList.toggle('open', !open);
+    });
+  });
+}
+if (typeof window.renderAnalysis === 'function') {
+  var shellRenderAnalysis27 = window.renderAnalysis;
+  window.renderAnalysis = function() { var r = shellRenderAnalysis27.apply(this, arguments); try { shellFoldAnalysis27(); } catch (e) {} return r; };
+}
+if (typeof anShowTab === 'function') {
+  var shellAnShowTab27 = anShowTab;
+  anShowTab = function() { var r = shellAnShowTab27.apply(this, arguments); try { shellFoldAnalysis27(); } catch (e) {} return r; };
+}
+
+// --- pseudo-run: fold the lap list once finished ---
+if (typeof csSimStop === 'function') {
+  var shellCsSimStop27 = csSimStop;
+  csSimStop = function(id, msg) {
+    var r = shellCsSimStop27.apply(this, arguments);
+    try {
+      if (msg && msg.indexOf('完走') >= 0) {
+        var le = document.getElementById('csSimLaps-' + id);
+        if (le && le.children.length) {
+          var n = le.children.length;
+          var inner = le.innerHTML;
+          le.innerHTML = '<button type="button" class="cs-lapsfold" onclick="var b=this.nextElementSibling;b.style.display=(b.style.display===\'none\'?\'\':\'none\');">ラップ内訳（' + n + '周）▼ たたむ／開く</button><div style="display:none">' + inner + '</div>';
+        }
+      }
+    } catch (e) {}
+    return r;
+  };
+}
+
+// --- stopwatch: move the photo-stock row above the 4-button nav row ---
+(function() {
+  var stock = document.getElementById('swStockBtn');
+  var nav = document.querySelector('.sw-navrow');
+  if (stock && nav && stock.closest('.stopwatch-btns')) {
+    var row = stock.closest('.stopwatch-btns');
+    if (row && row !== nav) nav.parentNode.insertBefore(row, nav);
+  }
+})();
+
+// --- ledger units accessor (live array is lgUnits; storage key is shellLedgerUnits) ---
+function shellUnits27() {
+  if (Array.isArray(window.lgUnits)) return window.lgUnits;
+  try { return JSON.parse(localStorage.getItem('shellLedgerUnits') || '[]'); } catch (e) { return []; }
+}
+
+// --- ledger: show registered counts in the motor-type pulldown ---
+if (typeof lgFillMotorSelect === 'function') {
+  var shellLgFill27 = lgFillMotorSelect;
+  lgFillMotorSelect = function(sel, val) {
+    var r = shellLgFill27.apply(this, arguments);
+    try {
+      if (sel) {
+        var counts = {};
+        shellUnits27().forEach(function(u) { if (u && u.motor) counts[u.motor] = (counts[u.motor] || 0) + 1; });
+        Array.prototype.forEach.call(sel.options, function(o) {
+          if (counts[o.value]) o.textContent = o.value + '（' + counts[o.value] + '）';
+        });
+      }
+    } catch (e) {}
+    return r;
+  };
+}
+
+// --- SPEED tap: motor picker rebuilt (all catalog types + new registration) ---
+function shellUnitClose27() { var m = document.getElementById('shellUnitModal'); if (m) m.style.display = 'none'; }
+function shellUnitTypes27() { return (window.LG_TYPES || []).slice(); }
+function shellOpenUnitModal() {
+  var m = document.getElementById('shellUnitModal');
+  var list = document.getElementById('shellUnitList');
+  if (!m || !list) return;
+  var opts = '<option value="">種類を選ぶ</option>' + shellUnitTypes27().map(function(t) { return '<option value="' + t + '">' + t + '</option>'; }).join('') + '<option value="__new">＋ 新規登録モーター</option>';
+  list.innerHTML = '<div class="shell-unit-note">モーターの種類を選んでください。選んだ種類で計測すると、記録はそのモーターに加わります。</div>' +
+    '<select id="shellTypeSel27" class="shell-unit-sel" onchange="shellUnitType27()">' + opts + '</select>' +
+    '<div id="shellUnitArea27"></div>' +
+    '<button type="button" class="shell-unit-btn" onclick="shellUnitClose27()">閉じる</button>';
+  m.style.display = 'flex';
+}
+function shellUnitType27() {
+  var sel = document.getElementById('shellTypeSel27');
+  var area = document.getElementById('shellUnitArea27');
+  if (!sel || !area) return;
+  var type = sel.value;
+  if (!type) { area.innerHTML = ''; return; }
+  if (type === '__new') {
+    var opts = shellUnitTypes27().map(function(t) { return '<option value="' + t + '">' + t + '</option>'; }).join('');
+    area.innerHTML = '<div class="shell-unit-note">新しいモーターを台帳に登録して、そのまま使うモーターにします。</div>' +
+      '<label>モーターの種類</label><select id="shellNewType27" class="shell-unit-sel">' + opts + '</select>' +
+      '<label>名前</label><input id="shellNewName27" class="shell-unit-inp" type="text" placeholder="例：赤いやつ">' +
+      '<label>番号</label><input id="shellNewNo27" class="shell-unit-inp" type="text" inputmode="numeric" placeholder="例：3">' +
+      '<button type="button" class="shell-unit-btn" onclick="shellUnitRegister27()">登録して使う</button>';
+    return;
+  }
+  var units = shellUnits27().filter(function(u) { return u && u.motor === type && u.status !== '引退'; });
+  if (units.length) {
+    var uo = '<option value="">個体なし（種類だけ）</option>' + units.map(function(u) {
+      var lbl = (u.name || '') + (u.no != null && u.no !== '' ? '（' + u.no + '番）' : '');
+      return '<option value="' + u.id + '">' + (lbl || u.id) + '</option>';
+    }).join('');
+    area.innerHTML = '<label>個体</label><select id="shellUnitSel27" class="shell-unit-sel">' + uo + '</select>' +
+      '<button type="button" class="shell-unit-btn" onclick="shellUnitApply27()">このモーターで使う</button>';
+  } else {
+    area.innerHTML = '<div class="shell-unit-note">この種類の登録個体はまだありません。種類だけ選んで計測できます。</div>' +
+      '<button type="button" class="shell-unit-btn" onclick="shellUnitApply27()">この種類で使う</button>';
+  }
+}
+function shellUnitApplyTypeOnly27(type) {
+  var code = (typeof shellMotorCodeFor === 'function') ? shellMotorCodeFor(type) : '';
+  if (window.machineState) {
+    machineState.motor = code;
+    machineState.unitName = '';
+    try { localStorage.setItem('rpmMachine', JSON.stringify(machineState)); } catch (e) {}
+  }
+  try { localStorage.setItem('shellUseUnitId', ''); } catch (e) {}
+  if (typeof refreshMachineSummary === 'function') refreshMachineSummary();
+  if (typeof refreshStatusUI === 'function') refreshStatusUI();
+  var capM = document.getElementById('capMotor');
+  if (capM) capM.textContent = type;
+  shellUnitClose27();
+}
+function shellUnitApply27() {
+  var typeSel = document.getElementById('shellTypeSel27');
+  var unitSel = document.getElementById('shellUnitSel27');
+  var type = typeSel ? typeSel.value : '';
+  if (unitSel && unitSel.value) { shellPickUnit(unitSel.value); return; }
+  if (type && type !== '__new') shellUnitApplyTypeOnly27(type);
+}
+function shellUnitRegister27() {
+  var type = (document.getElementById('shellNewType27') || {}).value || '';
+  var name = ((document.getElementById('shellNewName27') || {}).value || '').trim();
+  var noTxt = ((document.getElementById('shellNewNo27') || {}).value || '').trim();
+  if (!type) { alert('モーターの種類を選んでください'); return; }
+  if (!name && !noTxt) { alert('名前か番号のどちらかを入れてください'); return; }
+  var units = shellUnits27();
+  if (!Array.isArray(window.lgUnits)) { try { window.lgUnits = units; } catch (e) {} }
+  var no = noTxt === '' ? '' : (parseInt(noTxt, 10) || noTxt);
+  var unit = { id: 'U' + Date.now(), no: no, motor: type, name: name, rpmBefore: 0, rpmAfter: 0, volt: 0, amp: '', ohm: '', status: '現役', shaftWobble: '', noise: '', memo: '', photo: '', createdAt: Date.now() };
+  units.push(unit);
+  if (typeof lgSaveUnits === 'function') lgSaveUnits();
+  else { try { localStorage.setItem('shellLedgerUnits', JSON.stringify(units)); } catch (e) {} }
+  shellPickUnit(unit.id);
+}
+
+// --- shared overlay for whats-new / change list ---
+function shellOverlay27(html) {
+  var old = document.getElementById('shellOverlay27');
+  if (old) old.remove();
+  var ov = document.createElement('div');
+  ov.id = 'shellOverlay27';
+  ov.className = 'shell-wn';
+  ov.innerHTML = '<div class="shell-wn-card">' + html + '<button type="button" class="shell-wn-close" onclick="document.getElementById(\'shellOverlay27\').remove()">閉じる</button></div>';
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+var SHELL_CHANGES27 = [
+  '単体のRPM Memoryに、ストップウォッチを合体（土台づくり）',
+  'モーター台帳モジュールを追加（個体登録・自動反映）',
+  '走行記録モジュールを追加（種別・完走/アウト・コース紐付け）',
+  '解析ページを追加（ランキング・電圧・ロス・A/B）',
+  'コース作成モジュールを追加（パズル式レイアウト）',
+  '解析をタブ分け（モーター／ロス・A/B／完走率／大会／負けパターン）',
+  'コース作成を拡張（短いストレート、閉合の提案、バンク系ピース、高さ）',
+  'ランチャーにコース作成カードを追加／リモコンラップ対応',
+  'コースの表示に真上＋四方向（高さ）を追加',
+  '擬似ラン（理論タイム＋アニメーション）を追加',
+  '擬似ランの継ぎ目表示と再生速度ボタンを追加',
+  'レーン数3／5対応、擬似ランのラップ自動記録',
+  '擬似ランに理論値の注意書き、起動時はRPMトップに',
+  'コース作成画面を2段階（組む→詳細）に再編',
+  'モジュールボタンを上部中央に、RPMのキャッチコピーを削除',
+  '走行記録とコース作成を分離（モジュールボタンに統一）',
+  '細部の修正（合図間隔1秒、解析フィルター初期は畳む 等）',
+  '色味の修正（起動時は常にダーク＋シャープ）',
+  'ストップウォッチの色をRPMに合わせて深い黒に／実走データ解析を追加',
+  'プラズマダッシュ対応、台帳からのジャンプボタン追加',
+  '題名の整理とモジュールボタン右寄せ、開いた日の色分け',
+  '使うモーターをタップ式に（SPEED＝選択／RPM＝速度調整）、コース別くらべ追加、擬似ランのレーン順回、コース総点検（proto26）',
+  'proto27：畳み対応の拡大、コースカードのボタン入替、モーター選択の作り直し、変更ポップアップと変更内容一覧',
+  '今回（proto28）：RPM枠タップの速度調整を廃止し、目標RPM入力のみに（ギヤ・タイヤはマシン設定で変更）'
+];
+function shellShowChanges27() {
+  shellOverlay27('<h3>変更内容一覧（単体版 → モジュール版）</h3><div class="shell-unit-note">テスト期間中の特設です。手を付けた順番に並んでいます。</div><ol>' +
+    SHELL_CHANGES27.map(function(x) { return '<li>' + x + '</li>'; }).join('') + '</ol>');
+}
+(function() {
+  var l = document.getElementById('shellLauncher');
+  if (l && !document.getElementById('shellChangesBtn27')) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'shellChangesBtn27';
+    b.textContent = '🧪 テスト期間中：変更内容一覧';
+    b.addEventListener('click', shellShowChanges27);
+    var brand = l.querySelector('.shell-brand');
+    if (brand) l.insertBefore(b, brand); else l.insertBefore(b, l.firstChild);
+  }
+})();
+
+// --- whats-new popup for this build, after the first-run intro ---
+var SHELL_WN27 = [
+  '擬似ランのラップ内訳を畳めるようにしました',
+  '解析の各項目を畳めるようにしました（見出しタップで開きます）',
+  '完成コースのカード：ストップウォッチ／台帳ボタンを消し、そこに「コースを走らせる」を置きました',
+  'SPEEDタップのモーター選択を作り直し（全種類のプルダウン＋新規登録モーター）',
+  'モーター台帳の種類プルダウンに登録数を表示（例：ノーマルモーター（3））',
+  '写真をストックボタンを、4つ並びボタンの上に移しました',
+  '走行記録の詳細で、種別（レース／練習）を付け直せるようにしました',
+  'ランチャーに「変更内容一覧」ボタン（テスト期間中）を追加しました'
+];
+(function() {
+  var KEY = 'shellWhatsNewSeen';
+  var tries = 0;
+  var timer = setInterval(function() {
+    tries++;
+    if (tries > 240) { clearInterval(timer); return; }
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    if (seen === 'proto27') { clearInterval(timer); return; }
+    if (!document.body || !document.body.classList.contains('shell-at-rpm')) return;
+    var intro = document.getElementById('introBackdrop');
+    if (intro && intro.offsetParent !== null && getComputedStyle(intro).display !== 'none') return; // intro still open
+    clearInterval(timer);
+    shellOverlay27('<h3>変更点（proto27）</h3><ul>' + SHELL_WN27.map(function(x) { return '<li>' + x + '</li>'; }).join('') + '</ul>');
+    try { localStorage.setItem(KEY, 'proto27'); } catch (e) {}
+  }, 500);
+})();
+</script>
+
+
+<script>
+// ===== proto28: MOTOR RPM tap = target RPM only (gear/tire fields removed by user decision) =====
+function shellOpenAdjModal() {
+  // Pass through to the app's own target-RPM modal. The re-click must be deferred:
+  // an element cannot be re-clicked while its own click is still being dispatched.
+  window.__shellRpmPass = true;
+  setTimeout(function() {
+    var el = document.getElementById('rpmBlock');
+    if (el) el.click();
+  }, 0);
+}
+function shellCloseAdjModal() { /* modal removed in proto28; kept as a safe no-op */ }
+(function() {
+  var adj = document.getElementById('shellAdjModal');
+  if (adj) adj.remove();
+})();
+
+// --- whats-new for proto28 (supersedes proto27 popup if it was never seen) ---
+(function() {
+  try { if (!localStorage.getItem('shellWhatsNewSeen')) localStorage.setItem('shellWhatsNewSeen', 'proto27'); } catch (e) {}
+  var KEY = 'shellWhatsNewSeen28';
+  var tries = 0;
+  var timer = setInterval(function() {
+    tries++;
+    if (tries > 240) { clearInterval(timer); return; }
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    if (seen === 'proto28') { clearInterval(timer); return; }
+    if (!document.body || !document.body.classList.contains('shell-at-rpm')) return;
+    var intro = document.getElementById('introBackdrop');
+    if (intro && intro.offsetParent !== null && getComputedStyle(intro).display !== 'none') return;
+    if (document.getElementById('shellOverlay27')) return; // another popup is up
+    clearInterval(timer);
+    shellOverlay27('<h3>変更点（proto28）</h3><ul><li>RPMの枠を押したときの「速度調整」（ギヤ比・タイヤ径）を廃止しました。目標RPMの入力だけが開きます</li><li>ギヤ比・タイヤ径の変更は、これまで通りマシン設定からできます（スピード表示の計算に使います）</li></ul>');
+    try { localStorage.setItem(KEY, 'proto28'); } catch (e) {}
+  }, 500);
+})();
+</script>
+
+
+<div id="shellOverlay27" class="shell-wn"><div class="shell-wn-card"><h3>変更点（proto28）</h3><ul><li>RPMの枠を押したときの「速度調整」（ギヤ比・タイヤ径）を廃止しました。目標RPMの入力だけが開きます</li><li>ギヤ比・タイヤ径の変更は、これまで通りマシン設定からできます（スピード表示の計算に使います）</li></ul><button type="button" class="shell-wn-close" onclick="document.getElementById('shellOverlay27').remove()">閉じる</button></div></div></body></html>
