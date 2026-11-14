@@ -2307,6 +2307,13 @@ body.shell-at-analysis > *:not(#shellAnalysisWrap):not(#shellHomeBtn) { display:
 .cs-spdbtn.on { background: #FF7A00; border-color: #FF7A00; color: #fff; font-weight: 700; }
 
 </style>
+<style id="cs13Css">
+
+/* ===== AUTO LAP SPLITS proto13 ===== */
+.cs-simlaps { font-size: 12.5px; color: #d6d6da; font-variant-numeric: tabular-nums; }
+.cs-simlaps div { padding: 1px 0; }
+
+</style>
 </head>
 <body class="load-zero theme-classic shell-at-home">
 <div class="app-shell">
@@ -14723,9 +14730,9 @@ function csSideHtml(pieces, heights, view, ghost) {
   parts.push('</svg>');
   return parts.join('');
 }
-function csViewHtml(pieces, heights, ghost, view) {
-  if (!view || view === 'top') return csSvgHtml(pieces, heights, ghost);
-  return csSideHtml(pieces, heights, view, ghost);
+function csViewHtml(pieces, heights, ghost, view, lanes) {
+  if (!view || view === 'top') return csSvgHtml(pieces, heights, ghost, lanes);
+  return csSideHtml(pieces, heights, view, ghost, lanes);
 }
 
 // ---- overridden: builder render / course form / course card (edited current versions) ----
@@ -15170,8 +15177,8 @@ function csSvgHtml(pieces, heights, ghost) {
     var ddx = np[0] - pp[0], ddy = np[1] - pp[1];
     var dl = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
     var nx = -ddy / dl * 20, ny = ddx / dl * 20;
-    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="#ffffff" stroke-width="6" opacity="0.85"/>');
-    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="rgba(15,15,15,0.8)" stroke-width="3" stroke-dasharray="6 4.5"/>');
+    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="#ffffff" stroke-width="3" opacity="0.5"/>');
+    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="rgba(15,15,15,0.6)" stroke-width="1.6" stroke-dasharray="4 3.2"/>');
   }
   parts.push('<circle cx="0" cy="0" r="10" fill="#30d158"/>');
   parts.push('<text x="0" y="-18" fill="#30d158" font-size="17" text-anchor="middle" font-weight="bold">スタート</text>');
@@ -15221,8 +15228,8 @@ function csSideHtml(pieces, heights, view, ghost) {
   });
   for (var sj = 1; sj < sim.segs.length; sj++) {
     var sq = proj(sim.segs[sj].pts[0]);
-    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="#ffffff" stroke-width="5" opacity="0.85"/>');
-    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="rgba(15,15,15,0.8)" stroke-width="2.5" stroke-dasharray="5 4"/>');
+    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="#ffffff" stroke-width="2.5" opacity="0.5"/>');
+    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="rgba(15,15,15,0.6)" stroke-width="1.3" stroke-dasharray="3.5 3"/>');
   }
   var sp = proj(sim.segs[0].pts[0]);
   parts.push('<circle cx="' + sp[0].toFixed(1) + '" cy="' + sp[1].toFixed(1) + '" r="6" fill="#30d158"/>');
@@ -15253,6 +15260,374 @@ function csSimHtml(c) {
   }
   h += '</div>';
   return h;
+}
+
+</script>
+
+<script>
+
+// ===== LANES (3/5) + NO-PROTRUSION JOINTS + AUTO LAP SPLITS proto13 =====
+function csFormHtml() {
+  var c = csDraft;
+  var kindOpts = CS_KINDS.map(function(k) { return '<option value="' + k + '"' + (c.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
+  var h = '<div class="cs-form"><h3>' + (csEditId ? 'コースを編集' : 'コースを登録') + '</h3>';
+  h += '<div class="cs-frow"><label>コース名</label><input id="csFName" type="text" value="' + rnEsc(c.name || '') + '"></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>種別</label><select id="csFKind">' + kindOpts + '</select></div>';
+  h += '<div class="cs-frow"><label>場所・会場</label><input id="csFVenue" type="text" value="' + rnEsc(c.venue || '') + '"></div></div>';
+  h += '<div class="cs-fgrid"><div class="cs-frow"><label>周回数（1レース）</label><input id="csFLaps" type="number" inputmode="numeric" value="' + (c.laps || 3) + '"></div>';
+  h += '<div class="cs-frow"><label>レーン数</label><select id="csFLanes"><option value="3"' + ((c.lanes || 3) === 3 ? ' selected' : '') + '>3レーン</option><option value="5"' + ((c.lanes || 3) === 5 ? ' selected' : '') + '>5レーン</option></select></div>';
+  h += '<div class="cs-frow"><label>全長 手入力（m・ピースがないとき）</label><input id="csFLengthManual" type="number" step="0.1" inputmode="decimal" value="' + (c.lengthManual === '' || c.lengthManual == null ? '' : c.lengthManual) + '"></div></div>';
+  h += '<div class="cs-frow"><label>レイアウト（スタートから順にピースをタップ）</label>';
+  h += '<div class="cs-editrow cs-topctl"><button type="button" class="cs-ebtn" onclick="csUndo()">↩ 戻る</button><button type="button" class="cs-ebtn" onclick="csRedo()">↪ 進む</button><button type="button" class="cs-ebtn" id="csAddTargetBtn" onclick="csToggleTarget()">追加先：おわり</button><button type="button" class="cs-ebtn" onclick="csClearPieces()">全部消す</button></div>';
+  h += '<div class="cs-viewrow" id="csViewRow"></div>';
+  h += '<div class="cs-svgbox" id="csSvgBox"></div><div class="cs-stats" id="csBuildStats"></div>';
+  h += csPaletteHtml();
+  h += '<div class="cs-presets">' + CS_PRESETS.map(function(p, i) { return '<button type="button" class="cs-prebtn" onclick="csAddPreset(' + i + ')">' + p.label + '</button>'; }).join('') + '</div>';
+
+  h += '<div class="cs-seqwrap" id="csSeqChips"></div>';
+  h += '<div id="csEditBar"></div>';
+  h += '<div class="cs-frow"><label>マイセット（自分の組み合わせ）</label><div class="cs-presets" id="csMySetRow"></div><button type="button" class="cs-ebtn" style="width:100%" onclick="csSaveMySet()">今の並びをマイセットに保存</button></div>';
+  h += '<div class="cs-note">全長はピースの標準長（ストレート54cm・カーブ45°など）からの目安です。特殊セクションは実物と異なる場合があります。高さはスロープで自動で±110mm付き、選んだピースごとに変えられます。</div></div>';
+  h += '<div class="cs-frow"><label>写真（レイアウト図・コース全体など）</label><div class="cs-photos" id="csPhotoRow"></div>';
+  h += '<button type="button" class="cs-ebtn" style="width:100%" onclick="document.getElementById(\'csPhotoInput\').click()">写真を追加</button>';
+  h += '<input type="file" id="csPhotoInput" accept="image/*" style="display:none" onchange="csHandlePhoto(this)"></div>';
+  h += '<div class="cs-frow"><label>危険ポイント</label><textarea id="csFDanger" rows="2">' + rnEsc(c.danger || '') + '</textarea></div>';
+  h += '<div class="cs-frow"><label>メモ</label><textarea id="csFMemo" rows="2">' + rnEsc(c.memo || '') + '</textarea></div>';
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn primary" onclick="csSaveForm()">保存</button><button type="button" class="cs-btn" onclick="csCancelForm()">キャンセル</button></div>';
+  h += '</div>';
+  return h;
+}
+
+function csSaveForm() {
+  if (!csDraft) return;
+  var name = document.getElementById('csFName').value.trim();
+  if (!name) { alert('コース名を入れてください'); return; }
+  csDraft.name = name;
+  csDraft.kind = document.getElementById('csFKind').value;
+  csDraft.venue = document.getElementById('csFVenue').value.trim();
+  csDraft.laps = parseInt(document.getElementById('csFLaps').value, 10) || 3;
+  var laneEl = document.getElementById('csFLanes');
+  csDraft.lanes = laneEl ? (parseInt(laneEl.value, 10) || 3) : (csDraft.lanes || 3);
+  csDraft.danger = document.getElementById('csFDanger').value.trim();
+  csDraft.memo = document.getElementById('csFMemo').value.trim();
+  var lm = parseFloat(document.getElementById('csFLengthManual').value);
+  csDraft.lengthManual = isNaN(lm) ? '' : lm;
+  csDraft.heights = csHeightsOf(csDraft);
+  var sim = csSimulate(csDraft.pieces, csDraft.heights);
+  csDraft.lengthM = csDraft.pieces.length ? Math.round(sim.total) / 100 : (csDraft.lengthManual === '' ? null : csDraft.lengthManual);
+  csDraft.sections = {};
+  csDraft.pieces.forEach(function(cd) { csDraft.sections[cd] = (csDraft.sections[cd] || 0) + 1; });
+  csLoad();
+  if (csEditId) {
+    var target = null;
+    csCourses.forEach(function(c) { if (c.id === csEditId) target = c; });
+    if (target) Object.keys(csDraft).forEach(function(k) { target[k] = csDraft[k]; });
+  } else {
+    csDraft.id = 'c' + Date.now() + Math.floor(Math.random() * 999);
+    csDraft.createdAt = Date.now();
+    csCourses.push(csDraft);
+  }
+  if (!csSave()) { alert('保存できませんでした（容量不足の可能性）'); return; }
+  csDraft = null; csEditId = null;
+  renderCourses();
+}
+
+function csNewCourse() {
+  var t = new Date();
+  csEditId = null;
+  csDraft = { name: (t.getMonth() + 1) + '/' + t.getDate() + ' のコース', kind: '公式大会', venue: '', laps: 3, lanes: 3, pieces: [], heights: [], photos: [], danger: '', memo: '', lengthManual: '' };
+  csResetEditState();
+  renderCourses();
+}
+
+function csCardHtml(c) {
+  var openCls = csOpen[c.id] ? ' open' : '';
+  var st = csCourseStats(c);
+  var h = '<div class="cs-card' + openCls + '" data-cid="' + rnEsc(c.id) + '">';
+  h += '<button type="button" class="cs-head" onclick="csToggle(\'' + rnEsc(c.id) + '\')">';
+  h += '<span class="cs-name">' + rnEsc(c.name) + '</span>';
+  h += '<span class="cs-kind">' + rnEsc(c.kind || '') + '</span>';
+  h += '<span class="cs-len">' + (c.lengthM ? '約' + c.lengthM.toFixed(2) + 'm' : '全長未設定') + '</span></button>';
+  h += '<div class="cs-body">';
+  if (c.pieces && c.pieces.length) h += '<div class="cs-viewrow">' + csViewBtnsHtml('c', c.id) + '</div><div class="cs-svgbox">' + csViewHtml(c.pieces, c.heights, null, csCardViews[c.id] || 'top', c.lanes) + '</div>';
+  var kv = [];
+  if (c.venue) kv.push('場所：' + rnEsc(c.venue));
+  kv.push('レーン：' + (c.lanes || 3));
+  if (c.laps) kv.push('周回数：' + c.laps);
+  if (c.heights && c.heights.some(function(x) { return x; })) kv.push('高低差つき');
+  if (c.lengthM) kv.push('1周：約' + c.lengthM.toFixed(2) + 'm');
+  h += '<div class="cs-kv">' + kv.join('／') + '</div>';
+  if (c.sections) {
+    var chips = Object.keys(c.sections).filter(function(k) { return CS_PIECES[k]; }).map(function(k) { return '<span class="cs-secchip">' + rnEsc(CS_PIECES[k].label) + ' ×' + c.sections[k] + '</span>'; });
+    if (chips.length) h += '<div class="cs-secchips">' + chips.join('') + '</div>';
+  }
+  if (c.danger) h += '<div class="cs-kv">⚠ 危険ポイント：' + rnEsc(c.danger) + '</div>';
+  if (c.memo) h += '<div class="cs-kv">メモ：' + rnEsc(c.memo) + '</div>';
+  if (c.photos && c.photos.length) {
+    h += '<div class="cs-photos">' + c.photos.map(function(p) { return '<img src="' + rnEsc(rnPhotoSrc(p)) + '" alt="" onclick="swViewPhoto(\'' + rnEsc(p) + '\')">'; }).join('') + '</div>';
+  }
+  h += '<div class="cs-statsbox">このコースの走行：' + st.count + ' 件';
+  if (st.best != null) h += '／ベスト ' + ((typeof rnFmtMs === 'function') ? rnFmtMs(st.best) : (st.best / 1000).toFixed(3)) + ' 秒';
+  if (st.judged) h += '／完走率 ' + (st.fin / st.judged * 100).toFixed(1) + '%（' + st.fin + '/' + st.judged + '）';
+  h += '</div>';
+  h += '<div class="cs-linkrow"><button type="button" class="cs-linkbtn" onclick="shellGo(\'sw\')">⏱ ストップウォッチで測る</button><button type="button" class="cs-linkbtn" onclick="shellGo(\'ledger\')">📒 モーター台帳</button></div>';
+  h += csSimHtml(c);
+  h += '<div class="cs-btnrow"><button type="button" class="cs-btn" onclick="csEditCourse(\'' + rnEsc(c.id) + '\')">編集</button>';
+  h += '<button type="button" class="cs-btn" style="color:#ff6961" onclick="csDeleteCourse(\'' + rnEsc(c.id) + '\')">削除</button></div>';
+  h += '</div></div>';
+  return h;
+}
+
+function csRenderBuilder() {
+  if (!csDraft) return;
+  var heights = csHeightsOf(csDraft);
+  var sugg = csDraft.pieces.length >= 3 ? csSuggest(csDraft.pieces, heights) : null;
+  csSuggestCache = sugg && sugg.pieces ? sugg : null;
+  var svgBox = document.getElementById('csSvgBox');
+  if (!svgBox) return;
+  var vr = document.getElementById('csViewRow');
+  if (vr) vr.innerHTML = csViewBtnsHtml('b');
+  svgBox.innerHTML = csViewHtml(csDraft.pieces, heights, csSuggestCache ? { pieces: csSuggestCache.pieces, heights: csSuggestCache.pieces.map(function(c) { return csDefH(c); }) } : null, csView, csDraft.lanes);
+  var sim = csSimulate(csDraft.pieces, heights);
+  var sizeW = (sim.bbox.maxX - sim.bbox.minX) / 100, sizeH = (sim.bbox.maxY - sim.bbox.minY) / 100;
+  var statsHtml = '全長 約 ' + (sim.total / 100).toFixed(2) + ' m／ピース ' + csDraft.pieces.length + ' 個' +
+    (csDraft.pieces.length ? '／広さ 約 ' + sizeW.toFixed(1) + ' × ' + sizeH.toFixed(1) + ' m' : '') +
+    (sim.endZ !== 0 ? '／高さのずれ ' + sim.endZ + 'mm' : '');
+  if (sim.closed) statsHtml += '<br><span class="cs-closed">✓ 一周つながりました</span>';
+  else if (csSuggestCache) statsHtml += '<br>あと少し：' + csSuggestCache.pieces.map(function(c) { return rnEsc(CS_PIECES[c].label); }).join(' → ') + ' を足すと一周します<button type="button" class="cs-sugbtn" onclick="csApplySuggest()">提案どおりに足す</button>';
+  else if (csDraft.pieces.length >= 4) statsHtml += '<br>一周まで：位置のずれ 約 ' + (sim.endDist / 100).toFixed(2) + ' m／向きのずれ ' + sim.heading + '°';
+  var stats = document.getElementById('csBuildStats');
+  if (stats) stats.innerHTML = statsHtml;
+  var chips = document.getElementById('csSeqChips');
+  if (chips) chips.innerHTML = csDraft.pieces.length ? csDraft.pieces.map(function(cd, i) {
+    var hb = heights[i] ? ' ' + (heights[i] > 0 ? '↑' : '↓') + Math.abs(heights[i]) : '';
+    return '<span class="cs-seq' + (i === csSel ? ' sel' : '') + '" onclick="csSelectPiece(' + i + ')">' + (i + 1) + '.' + rnEsc(CS_PIECES[cd].label) + hb + '</span>';
+  }).join('') : '<span class="cs-note">まだピースがありません</span>';
+  var bar = document.getElementById('csEditBar');
+  if (bar) {
+    if (csSel >= 0 && csDraft.pieces[csSel]) {
+      var code = csDraft.pieces[csSel];
+      bar.innerHTML = '<div class="cs-editbar"><div class="cs-eb-title">' + (csSel + 1) + '番目：' + rnEsc(CS_PIECES[code].label) + '（高さ ' + heights[csSel] + 'mm）</div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csToggleInsert()">' + (csInsertMode ? '差し替えに戻す' : '前に追加する') + '</button><button type="button" class="cs-ebtn" style="color:#ff6961" onclick="csDeleteSelected()">このピースを削除</button></div>' +
+        '<div class="cs-editrow"><button type="button" class="cs-ebtn" onclick="csSetSelHeight(110)">高さ +110</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(0)">高さ 0</button><button type="button" class="cs-ebtn" onclick="csSetSelHeight(-110)">高さ −110</button></div>' +
+        '<div class="cs-note">' + (csInsertMode ? 'パレットをタップすると、このピースの前に追加されます。' : 'パレットをタップすると、このピースと差し替わります。') + '</div></div>';
+    } else if (csDraft.pieces.length) {
+      bar.innerHTML = '<div class="cs-note">番号チップをタップすると、そのピースを選んで差し替え・削除・高さ変更ができます。</div>';
+    } else bar.innerHTML = '';
+  }
+  var tg = document.getElementById('csAddTargetBtn');
+  if (tg) tg.textContent = '追加先：' + (csAddAtStart ? 'はじめ' : 'おわり');
+  csRenderMySets();
+}
+
+function csSvgHtml(pieces, heights, ghost, lanes) {
+  var laneW = lanes === 5 ? 57.5 : 34.5;
+  if (!pieces || !pieces.length) return '<div class="cs-nosvg">ピースを置くと、ここにレイアウトが描かれます</div>';
+  var sim = csSimulate(pieces, heights);
+  var ghostSegs = [];
+  if (ghost && ghost.pieces && ghost.pieces.length) {
+    ghostSegs = csSimulate(ghost.pieces, ghost.heights, { x: sim.endX, y: sim.endY, h: sim.endH, z: sim.endZ }).segs;
+  }
+  var minX = sim.bbox.minX, maxX = sim.bbox.maxX, minY = sim.bbox.minY, maxY = sim.bbox.maxY;
+  ghostSegs.forEach(function(s) { s.pts.forEach(function(p) { if (p[0] < minX) minX = p[0]; if (p[0] > maxX) maxX = p[0]; if (p[1] < minY) minY = p[1]; if (p[1] > maxY) maxY = p[1]; }); });
+  var pad = 26;
+  var w = (maxX - minX) + pad * 2;
+  var hgt = (maxY - minY) + pad * 2;
+  var parts = ['<svg viewBox="' + (minX - pad) + ' ' + (minY - pad) + ' ' + w + ' ' + hgt + '" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">'];
+  ghostSegs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="#9a9aa2" stroke-width="34.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 8" opacity="0.45"/>');
+  });
+  sim.segs.forEach(function(s, si) {
+    var raw = s.pts.slice();
+    if (si > 0) { var pv = sim.segs[si - 1].pts; raw.unshift(pv[pv.length - 2] || pv[0]); }
+    if (si < sim.segs.length - 1) { var nv = sim.segs[si + 1].pts; raw.push(nv[1] || nv[0]); }
+    var pts = raw.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="' + CS_PIECES[s.code].color + '" stroke-width="' + laneW + '" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" opacity="0.92"/>');
+  });
+  sim.segs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="2" stroke-linecap="butt"/>');
+  });
+  for (var ji = 1; ji < sim.segs.length; ji++) {
+    var jp = sim.segs[ji].pts[0];
+    var pp = sim.segs[ji - 1].pts[sim.segs[ji - 1].pts.length - 1];
+    var np = sim.segs[ji].pts[1] || jp;
+    var ddx = np[0] - pp[0], ddy = np[1] - pp[1];
+    var dl = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+    var nx = -ddy / dl * (laneW / 2 + 3), ny = ddx / dl * (laneW / 2 + 3);
+    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="#ffffff" stroke-width="3" opacity="0.5"/>');
+    parts.push('<line x1="' + (jp[0] - nx).toFixed(1) + '" y1="' + (jp[1] - ny).toFixed(1) + '" x2="' + (jp[0] + nx).toFixed(1) + '" y2="' + (jp[1] + ny).toFixed(1) + '" stroke="rgba(15,15,15,0.6)" stroke-width="1.6" stroke-dasharray="4 3.2"/>');
+  }
+  parts.push('<circle cx="0" cy="0" r="10" fill="#30d158"/>');
+  parts.push('<text x="0" y="-18" fill="#30d158" font-size="17" text-anchor="middle" font-weight="bold">スタート</text>');
+  if (!ghostSegs.length) {
+    var last = sim.segs[sim.segs.length - 1];
+    var ep = last.pts[last.pts.length - 1];
+    parts.push('<circle cx="' + ep[0].toFixed(1) + '" cy="' + ep[1].toFixed(1) + '" r="8" fill="' + (sim.closed ? '#30d158' : '#ffd60a') + '"/>');
+  }
+  parts.push('</svg>');
+  return parts.join('');
+}
+
+function csSideHtml(pieces, heights, view, ghost, lanes) {
+  var sideW = lanes === 5 ? 15 : 9;
+  if (!pieces || !pieces.length) return '<div class="cs-nosvg">ピースを置くと、ここにレイアウトが描かれます</div>';
+  var sim = csSimulate(pieces, heights);
+  var ghostSegs = [];
+  if (ghost && ghost.pieces && ghost.pieces.length) {
+    ghostSegs = csSimulate(ghost.pieces, ghost.heights, { x: sim.endX, y: sim.endY, h: sim.endH, z: sim.endZ }).segs;
+  }
+  var K = 0.3; // mm -> screen units with x3 exaggeration (z is mm, plan is cm)
+  function proj(p) { return [csProject(view, p[0], p[1]), -(p[2] * K)]; }
+  var all = [];
+  sim.segs.forEach(function(s) { s.pts.forEach(function(p) { all.push(proj(p)); }); });
+  ghostSegs.forEach(function(s) { s.pts.forEach(function(p) { all.push(proj(p)); }); });
+  var minH = Infinity, maxH = -Infinity, minV = 0, maxV = 0;
+  all.forEach(function(q) { if (q[0] < minH) minH = q[0]; if (q[0] > maxH) maxH = q[0]; if (q[1] < minV) minV = q[1]; if (q[1] > maxV) maxV = q[1]; });
+  var padH = 20, padTop = 26, padBot = 30;
+  var w = (maxH - minH) + padH * 2;
+  var hgt = (maxV - minV) + padTop + padBot;
+  var parts = ['<svg viewBox="' + (minH - padH) + ' ' + (minV - padTop) + ' ' + w + ' ' + hgt + '" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">'];
+  // height gridlines every 110mm
+  var zVals = [];
+  for (var zz = -330; zz <= 330; zz += 110) zVals.push(zz);
+  zVals.forEach(function(zv) {
+    var gy = -(zv * K);
+    if (gy < minV - padTop || gy > maxV + padBot) return;
+    parts.push('<line x1="' + (minH - padH) + '" y1="' + gy + '" x2="' + (maxH + padH) + '" y2="' + gy + '" stroke="' + (zv === 0 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.10)') + '" stroke-width="1"' + (zv === 0 ? ' stroke-dasharray="5 4"' : '') + '/>');
+    parts.push('<text x="' + (minH - padH + 2) + '" y="' + (gy - 3) + '" fill="#aeaeb2" font-size="11">' + (zv === 0 ? 'スタートの高さ' : zv + 'mm') + '</text>');
+  });
+  ghostSegs.forEach(function(s) {
+    var pts = s.pts.map(function(p) { var q = proj(p); return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="#9a9aa2" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" opacity="0.5"/>');
+  });
+  sim.segs.forEach(function(s, si) {
+    var raw = s.pts.slice();
+    if (si > 0) { var pv = sim.segs[si - 1].pts; raw.unshift(pv[pv.length - 2] || pv[0]); }
+    if (si < sim.segs.length - 1) { var nv = sim.segs[si + 1].pts; raw.push(nv[1] || nv[0]); }
+    var pts = raw.map(function(p) { var q = proj(p); return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    parts.push('<polyline points="' + pts + '" fill="none" stroke="' + CS_PIECES[s.code].color + '" stroke-width="' + sideW + '" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" opacity="0.95"/>');
+  });
+  for (var sj = 1; sj < sim.segs.length; sj++) {
+    var sq = proj(sim.segs[sj].pts[0]);
+    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="#ffffff" stroke-width="2.5" opacity="0.5"/>');
+    parts.push('<line x1="' + sq[0].toFixed(1) + '" y1="' + (sq[1] - 17) + '" x2="' + sq[0].toFixed(1) + '" y2="' + (sq[1] + 17) + '" stroke="rgba(15,15,15,0.6)" stroke-width="1.3" stroke-dasharray="3.5 3"/>');
+  }
+  var sp = proj(sim.segs[0].pts[0]);
+  parts.push('<circle cx="' + sp[0].toFixed(1) + '" cy="' + sp[1].toFixed(1) + '" r="6" fill="#30d158"/>');
+  parts.push('<text x="' + sp[0].toFixed(1) + '" y="' + (sp[1] - 12) + '" fill="#30d158" font-size="13" text-anchor="middle" font-weight="bold">スタート</text>');
+  parts.push('</svg>');
+  return parts.join('');
+}
+
+function csSimHtml(c) {
+  var cfg = csSimCfgFor(c.id);
+  var h = '<div class="cs-sim" data-sim="' + rnEsc(c.id) + '">';
+  h += '<div class="cs-sim-h">🧪 擬似ラン（抵抗・ロスなしの理論値）</div>';
+  if (!c.lengthM) { h += '<div class="cs-note">全長が入ると計算できます</div></div>'; return h; }
+  var opts = '<option value="">モーターを選ぶとベストRPMが入ります</option>';
+  if (typeof lgRows === 'function') {
+    lgRows().forEach(function(r) {
+      var st = r.stats;
+      if (st && st.best) opts += '<option value="' + st.best + '">' + rnEsc(r.motor) + ' ' + rnEsc(r.name) + '（ベスト ' + st.best.toLocaleString() + '）</option>';
+    });
+  }
+  h += '<div class="cs-simrow"><select class="cs-sim-unit" onchange="csSimUnitPick(\'' + rnEsc(c.id) + '\', this)">' + opts + '</select></div>';
+  h += '<div class="cs-simrow"><label>RPM <input type="number" class="cs-sim-rpm" value="' + rnEsc(String(cfg.rpm)) + '" placeholder="30000" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')"></label>' +
+    '<label>ギヤ <select class="cs-sim-gear" onchange="csSimUpdate(\'' + rnEsc(c.id) + '\')">' + [3.5, 3.7, 4, 4.2, 5].map(function(g) { return '<option value="' + g + '"' + (Number(cfg.gear) === g ? ' selected' : '') + '>' + g.toFixed(1) + ':1</option>'; }).join('') + '</select></label>' +
+    '<label>タイヤ <input type="number" class="cs-sim-tire" step="0.1" value="' + cfg.tire + '" oninput="csSimUpdate(\'' + rnEsc(c.id) + '\')">mm</label></div>';
+  h += '<div class="cs-sim-out" id="csSimOut-' + rnEsc(c.id) + '">' + csSimOutText(c) + '</div>';
+  if (c.pieces && c.pieces.length) {
+    h += '<div class="cs-simrow"><button type="button" class="cs-simrun" id="csSimBtn-' + rnEsc(c.id) + '" onclick="csSimToggle(\'' + rnEsc(c.id) + '\')">▶ コースを走らせる</button><span class="cs-sim-time" id="csSimTime-' + rnEsc(c.id) + '"></span><span class="cs-simspeed" id="csSimSpeed-' + rnEsc(c.id) + '"></span></div>';
+  h += '<div class="cs-simlaps" id="csSimLaps-' + rnEsc(c.id) + '"></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function csSimToggle(id) {
+  if (csSimAnim[id]) { csSimStop(id, ''); return; }
+  var c = csCourseById(id);
+  if (!c || !c.pieces || !c.pieces.length || !c.lengthM) return;
+  var cfg = csSimRead(id);
+  var rpm = parseFloat(cfg.rpm);
+  if (!rpm || rpm <= 0) { csSimUpdate(id); return; }
+  if ((csCardViews[id] || 'top') !== 'top') { csCardViews[id] = 'top'; renderCourses(); }
+  var card = document.querySelector('.cs-card[data-cid="' + id + '"]');
+  var svg = card && card.querySelector('.cs-svgbox svg');
+  if (!svg) return;
+  var sim = csSimulate(c.pieces, c.heights);
+  var pts = [];
+  sim.segs.forEach(function(sg) { sg.pts.forEach(function(p) { pts.push(p); }); });
+  if (pts.length < 2) return;
+  var cum = [0];
+  for (var i = 1; i < pts.length; i++) {
+    var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
+    cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy));
+  }
+  var totalCm = cum[cum.length - 1];
+  var calc = csSimCompute(rpm, Number(cfg.gear), parseFloat(cfg.tire) || 22.5, c.lengthM, c.laps || 1);
+  var vCm = calc.kmh / 3.6 * 100;
+  var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('r', '11');
+  circle.setAttribute('fill', '#FF7A00');
+  circle.setAttribute('stroke', '#fff');
+  circle.setAttribute('stroke-width', '3');
+  circle.setAttribute('class', 'cs-simdot');
+  circle.setAttribute('cx', pts[0][0]);
+  circle.setAttribute('cy', pts[0][1]);
+  svg.appendChild(circle);
+  var btn = document.getElementById('csSimBtn-' + id);
+  if (btn) btn.textContent = '⏹ 止める';
+  var spd = document.getElementById('csSimSpeed-' + id);
+  if (spd) {
+    spd.innerHTML = [2, 1.25, 1, 0.5, 0.25].map(function(m) {
+      return '<button type="button" class="cs-spdbtn' + (m === 1 ? ' on' : '') + '" data-mult="' + m + '" onclick="csSimSetSpeed(\'' + id + '\', ' + m + ')">×' + m + '</button>';
+    }).join('');
+  }
+  var lapsEl0 = document.getElementById('csSimLaps-' + id);
+  if (lapsEl0) lapsEl0.innerHTML = '';
+  var anim = { timer: null, circle: circle, mult: 1, simT: 0, lastTs: Date.now(), lapDone: 0, lastLapT: 0 };
+  anim.timer = setInterval(function() {
+    if (!circle.isConnected) { csSimStop(id, ''); return; }
+    var now = Date.now();
+    var dt = (now - anim.lastTs) / 1000;
+    anim.lastTs = now;
+    var prevT = anim.simT;
+    anim.simT += dt * anim.mult;
+    var timeEl = document.getElementById('csSimTime-' + id);
+    if (anim.simT >= calc.totalSec) {
+      circle.setAttribute('cx', pts[0][0]);
+      circle.setAttribute('cy', pts[0][1]);
+      if (anim.lapDone < (c.laps || 1)) {
+        anim.lapDone++;
+        var le0 = document.getElementById('csSimLaps-' + id);
+        if (le0) le0.innerHTML += '<div>' + anim.lapDone + '周目 ' + (calc.totalSec - anim.lastLapT).toFixed(2) + ' 秒</div>';
+      }
+      csSimStop(id, '🏁 完走 ' + calc.totalSec.toFixed(2) + ' 秒（理論値）');
+      return;
+    }
+    var dMod = (vCm * anim.simT) % totalCm;
+    var lo = 0;
+    while (lo < cum.length - 2 && cum[lo + 1] < dMod) lo++;
+    var segLen = cum[lo + 1] - cum[lo];
+    var f = segLen ? (dMod - cum[lo]) / segLen : 0;
+    circle.setAttribute('cx', (pts[lo][0] + (pts[lo + 1][0] - pts[lo][0]) * f).toFixed(1));
+    circle.setAttribute('cy', (pts[lo][1] + (pts[lo + 1][1] - pts[lo][1]) * f).toFixed(1));
+    var distPrev = vCm * prevT, distNow = vCm * anim.simT;
+    while (anim.lapDone < Math.min(Math.floor(distNow / totalCm), c.laps || 1)) {
+      var boundary = (anim.lapDone + 1) * totalCm;
+      var frac = (boundary - distPrev) / ((distNow - distPrev) || 1);
+      var crossT = prevT + frac * (anim.simT - prevT);
+      anim.lapDone++;
+      var le = document.getElementById('csSimLaps-' + id);
+      if (le) le.innerHTML += '<div>' + anim.lapDone + '周目 ' + (crossT - anim.lastLapT).toFixed(2) + ' 秒</div>';
+      anim.lastLapT = crossT;
+    }
+    if (timeEl) timeEl.textContent = '走行中 ' + anim.simT.toFixed(2) + ' 秒／' + (Math.floor(vCm * anim.simT / totalCm) + 1) + '周目';
+  }, 30);
+  csSimAnim[id] = anim;
 }
 
 </script>
