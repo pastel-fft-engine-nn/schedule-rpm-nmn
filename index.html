@@ -10434,6 +10434,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
 </style>
 
 <div id="shellLauncher" role="dialog" aria-label="ツール選択">
+  <button type="button" id="shellChangesBtn29" onclick="window.shellShowChanges29 && window.shellShowChanges29()">🧪 テスト期間中：変更内容一覧</button>
   <div class="shell-brand">
     <div class="shell-brand-name">RPM<span class="shell-brand-accent">memory</span></div>
     <div class="shell-brand-sub">Yo, pick your poison.</div>
@@ -10469,6 +10470,7 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="shell-card-name">コース作成</div>
       <div class="shell-card-sub">レイアウトをパズルで組む</div>
     </button>
+    <button type="button" class="shell-card" id="shellSetCard29" onclick="window.shellOpenSettings29 && window.shellOpenSettings29()"><div class="shell-card-icon">⚙️</div><div class="shell-card-name">設定</div><div class="shell-card-sub">CSV・起動画面・解析表示</div></button>
   </div>
   <div class="shell-startset">
     <div class="shell-startset-t">起動時の画面</div>
@@ -17028,9 +17030,9 @@ function shellCloseAdjModal() { /* modal removed in proto28; kept as a safe no-o
 
 
 <style>
-/* ===== proto29: Android tap/scroll tuning + no unintended zoom ===== */
+/* ===== proto29-ios: iOS tap/scroll tuning + no unintended zoom ===== */
 button, a, select, input, textarea, label, summary,.shell-card,.rn-head,.an-h, [onclick] { touch-action: manipulation;}
-* { -webkit-tap-highlight-color: transparent; scrollbar-width: none; -ms-overflow-style: none;}
+* { -webkit-tap-highlight-color: transparent;}
 *::-webkit-scrollbar { display: none!important; width: 0!important; height: 0!important;}
 html, body { overscroll-behavior: none;}
 body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;}
@@ -17101,7 +17103,7 @@ var SHELL_CHANGES29 = [
 '色味の修正（起動時は常にダーク＋シャープ）',
 '題名の整理とモジュールボタン右寄せ、開いた日の色分け',
 '変更ポップアップと変更内容一覧を追加（proto27）',
-'Android向けにタップ／スクロールを調整（反応アップ・スクロールバー非表示・誤って拡大しない）',
+'iOS向けにタップ／スクロールを調整（反応アップ・スクロールバー非表示・誤って拡大しない）',
 'ランチャーに「設定」を追加（CSV・起動時の画面・解析の表示ON/OFF）',
 '変更内容一覧が開かない問題を直し、モジュールごとに分け直しました'
 ]},
@@ -17198,7 +17200,7 @@ d.id = 'shellBuildStamp';
 d.style.cssText = 'text-align:center;color:#8a8f98;font-size:11px;padding:10px 0 26px;';
 l.appendChild(d);
 }
-d.textContent = 'shell proto29';
+d.textContent = 'shell proto30-ios';
 }
 
 // ---------- item 4: shell settings (launcher card + overlay) ----------
@@ -17813,7 +17815,7 @@ if (intro && intro.offsetParent!== null && getComputedStyle(intro).display!== 'n
 if (document.getElementById('shellOverlay27') || document.getElementById('shellOverlay29')) return;
 clearInterval(timer);
 shellOverlay29('<h3>変更点（proto29）</h3><ul>' + [
-'Android向けにタップとスクロールを調整しました（ワンテンポ遅い感じの改善、スクロールバー非表示、誤って拡大しない）',
+'iOS向けにタップとスクロールを調整しました（スクロールバー非表示、誤って拡大しない）',
 'タイム計測に出ていた白い縦線（スクロールバー）を消しました',
 '変更内容一覧が開かない問題を直し、モジュールごとに分け直しました',
 'ランチャーに「設定」を追加（CSVの出し入れ・起動時の画面・解析の表示ON/OFF）',
@@ -17828,5 +17830,253 @@ try { localStorage.setItem(KEY, 'proto29');} catch (e) {}
 })();
 </script>
 
+
+
+<style id="shell30Css">
+/* ===== proto30: settings groups (fold + 2col) / analysis jump / iOS safe-area ===== */
+.shell-grp30 { border: 1px solid #3a3b41; border-radius: 10px; margin: 8px 0; overflow: hidden; }
+.shell-grp-h30 { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #17181c; cursor: pointer; font-size: 14px; font-weight: 700; color: #fff; }
+.shell-grp-h30 .cnt { margin-left: auto; font-size: 12px; font-weight: 400; color: #9a9ea6; }
+.shell-grp-h30 .arr { color: #ff973d; font-size: 12px; }
+.shell-grp-b30 { display: none; padding: 8px 12px 10px; }
+.shell-grp-b30.open { display: block; }
+.shell-grp-grid30 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+.shell-grp-grid30 .shell-set-check29 { min-width: 0; }
+.shell-grp-grid30 .shell-set-check29 span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-mini-row30 { display: flex; gap: 8px; margin-bottom: 6px; }
+.shell-mini30 { flex: 1; padding: 6px 0; font-size: 12.5px; border-radius: 8px; border: 1px solid #3a3b41; background: #232428; color: #fff; cursor: pointer; font-weight: 700; }
+#shellAnJumpRow30 { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; }
+#shellAnJumpRow30 label { font-size: 12px; color: #9a9ea6; flex: none; }
+#shellAnJump30 { flex: 1; min-width: 0; padding: 9px; border-radius: 10px; border: 1px solid #3a3b41; background: #101114; color: #fff; font-size: 14px; }
+#shellLauncher { padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px)); }
+</style>
+<script>
+// ===== proto30: settings rework (folded groups, 2-col, all on/off) + analysis jump pulldown =====
+var SHELL_CSV_GROUPS30 = [
+  ['基本', ['date', 'datetime', 'name']],
+  ['モーター', ['motor', 'unit']],
+  ['回転数', ['rpm', 'rpmAvg', 'stab', 'rpmRaw']],
+  ['速度', ['speed', 'speedAvg', 'speedRaw']],
+  ['条件', ['voltage', 'gear', 'tire', 'load', 'shaft', 'chassis']],
+  ['ロス', ['lossBase', 'lossNow', 'lossPct', 'lossBaseSrc']],
+  ['比較（A/B）', ['abBase', 'abNow', 'abDiff', 'abName']]
+];
+var SHELL_AN_PANELS30 = [['anPanelMotor', 'モーター'], ['anPanelLoss', 'ロス・A/B'], ['anPanelRates', '完走率'], ['anPanelEvent', '大会'], ['anPanelOuts', '負けパターン']];
+
+function shellGrp30(title, bodyHtml) {
+  return '<div class="shell-grp30"><div class="shell-grp-h30"><span class="arr">▶</span><span>' + title + '</span><span class="cnt"></span></div><div class="shell-grp-b30">' + bodyHtml + '</div></div>';
+}
+function shellWireGrp30(root) {
+  root.querySelectorAll('.shell-grp30').forEach(function(g) {
+    var h = g.querySelector('.shell-grp-h30'), b = g.querySelector('.shell-grp-b30');
+    h.addEventListener('click', function() {
+      var open = b.classList.toggle('open');
+      h.querySelector('.arr').textContent = open ? '▼' : '▶';
+    });
+  });
+}
+function shellOpenSettings29() {
+  var startMode = (typeof shellStartMode === 'function') ? shellStartMode() : 'rpm';
+  var h = '<h3>設定（モジュール共通）</h3>';
+  h += '<div class="shell-set-row29"><label>起動時の画面</label><select id="shellSetStart29" class="shell-set-sel29">' + '<option value="rpm"' + (startMode === 'rpm' ? ' selected' : '') + '>RPMトップ</option>' + '<option value="last"' + (startMode === 'last' ? ' selected' : '') + '>前回の画面</option></select></div>';
+  h += '<h4 class="shell-set-h29">CSV</h4>';
+  h += '<div class="shell-set-row29"><label>CSVを出すモジュール</label><select id="shellSetCsvMod29" class="shell-set-sel29">' + '<option value="rpm">RPM（履歴）</option><option value="runs">走行記録</option><option value="ledger">モーター台帳</option><option value="courses">コース</option></select></div>';
+  h += '<div class="shell-set-row29"><button type="button" class="shell-set-btn29 primary" id="shellSetCsvOut29">CSV出力</button></div>';
+  h += '<div class="shell-set-row29"><button type="button" class="shell-set-btn29" id="shellSetCsvIn29">データを読み込む（バックアップ復元）</button>' + '<div class="shell-set-note29">読み込みは、RPM Memoryの設定にある「復元」と同じ仕組みです（CSVの読み込みはアプリにはありません）。</div></div>';
+  h += '<div class="shell-set-row29"><label>CSV出力項目（RPM履歴用・RPMの設定と共通）</label>'
+     + '<div class="shell-mini-row30"><button type="button" class="shell-mini30" id="shellSetColsAll29">全てON</button><button type="button" class="shell-mini30" id="shellSetColsNone29">全てOFF</button></div>'
+     + '<div id="shellSetCsvCols29"></div></div>';
+  h += '<h4 class="shell-set-h29">解析の表示</h4>'
+     + '<div class="shell-mini-row30"><button type="button" class="shell-mini30" id="shellSetAnAll30">全てON</button><button type="button" class="shell-mini30" id="shellSetAnNone30">全てOFF</button></div>'
+     + '<div id="shellSetAn29"></div>' + '<div class="shell-set-note29">OFFにした項目は、解析の画面と、解析のプルダウンに出なくなります。解析を一度開くと、項目がここに増えます。</div>';
+  var ov = shellOverlay29(h);
+  var startSel = ov.querySelector('#shellSetStart29');
+  if (startSel) startSel.addEventListener('change', function() { if (typeof shellSetStartMode === 'function') shellSetStartMode(startSel.value); });
+  var outBtn = ov.querySelector('#shellSetCsvOut29');
+  if (outBtn) outBtn.addEventListener('click', function() { var mod = (ov.querySelector('#shellSetCsvMod29') || {}).value || 'rpm'; try { shellExportCsv29(mod); } catch (e) {} });
+  var inBtn = ov.querySelector('#shellSetCsvIn29');
+  if (inBtn) inBtn.addEventListener('click', function() { ov.remove(); if (typeof openRestore === 'function') openRestore(); else { var f = document.getElementById('backupImportFile'); if (f) f.click(); } });
+
+  // --- CSV columns: grouped, folded, 2-col ---
+  var labelOf = {}; SHELL_CSV_COLS29.forEach(function(c) { labelOf[c[0]] = c[1]; });
+  var colsBox = ov.querySelector('#shellSetCsvCols29');
+  function paintCols() {
+    if (!colsBox) return;
+    var sel = shellCsvColsSel29();
+    colsBox.innerHTML = '';
+    SHELL_CSV_GROUPS30.forEach(function(g) {
+      var wrap = document.createElement('div'); wrap.innerHTML = shellGrp30(g[0], '<div class="shell-mini-row30"><button type="button" class="shell-mini30" data-gall="' + g[0] + '">全てON</button><button type="button" class="shell-mini30" data-gnone="' + g[0] + '">全てOFF</button></div><div class="shell-grp-grid30"></div>');
+      var grp = wrap.firstChild;
+      var grid = grp.querySelector('.shell-grp-grid30');
+      g[1].forEach(function(key) {
+        var lab = document.createElement('label'); lab.className = 'shell-set-check29';
+        var inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = sel.indexOf(key) >= 0; inp.setAttribute('data-shellcsvcol29', key);
+        inp.addEventListener('change', function() {
+          var cur = shellCsvColsSel29();
+          if (inp.checked) { if (cur.indexOf(key) < 0) cur.push(key); } else cur = cur.filter(function(k) { return k !== key; });
+          shellCsvColsSave29(cur); paintColsCounts();
+        });
+        lab.appendChild(inp); var sp = document.createElement('span'); sp.textContent = labelOf[key] || key; lab.appendChild(sp); grid.appendChild(lab);
+      });
+      grp.querySelector('[data-gall]').addEventListener('click', function() {
+        var cur = shellCsvColsSel29(); g[1].forEach(function(k) { if (cur.indexOf(k) < 0) cur.push(k); }); shellCsvColsSave29(cur); paintCols();
+      });
+      grp.querySelector('[data-gnone]').addEventListener('click', function() {
+        var cur = shellCsvColsSel29().filter(function(k) { return g[1].indexOf(k) < 0; }); shellCsvColsSave29(cur); paintCols();
+      });
+      colsBox.appendChild(grp);
+    });
+    shellWireGrp30(colsBox); paintColsCounts();
+  }
+  function paintColsCounts() {
+    var sel = shellCsvColsSel29();
+    colsBox.querySelectorAll('.shell-grp30').forEach(function(grp, gi) {
+      var g = SHELL_CSV_GROUPS30[gi]; if (!g) return;
+      var on = g[1].filter(function(k) { return sel.indexOf(k) >= 0; }).length;
+      var cnt = grp.querySelector('.cnt'); if (cnt) cnt.textContent = on + '/' + g[1].length + ' ON';
+      grp.querySelectorAll('input[data-shellcsvcol29]').forEach(function(inp) { inp.checked = sel.indexOf(inp.getAttribute('data-shellcsvcol29')) >= 0; });
+    });
+  }
+  paintCols();
+  var allB = ov.querySelector('#shellSetColsAll29'), noneB = ov.querySelector('#shellSetColsNone29');
+  if (allB) allB.addEventListener('click', function() { shellCsvColsSave29(SHELL_CSV_COLS29.map(function(c) { return c[0]; })); paintCols(); });
+  if (noneB) noneB.addEventListener('click', function() { shellCsvColsSave29([]); paintCols(); });
+
+  // --- analysis visibility: grouped by tab panel, folded, 2-col ---
+  var anBox = ov.querySelector('#shellSetAn29');
+  function anGroups() {
+    var titles = shellAnTitles29();
+    var byPanel = {}; var used = {};
+    SHELL_AN_PANELS30.forEach(function(p) {
+      var el = document.getElementById(p[0]); var list = [];
+      if (el) el.querySelectorAll('.an-sec .an-h').forEach(function(hd) { var t = hd.textContent.trim(); if (t && titles.indexOf(t) >= 0 && !used[t]) { list.push(t); used[t] = 1; } });
+      if (list.length) byPanel[p[1]] = list;
+    });
+    var rest = titles.filter(function(t) { return !used[t]; });
+    if (rest.length) byPanel['その他'] = rest;
+    return byPanel;
+  }
+  function paintAn() {
+    if (!anBox) return;
+    var vis = shellAnVis29(); var groups = anGroups();
+    anBox.innerHTML = '';
+    Object.keys(groups).forEach(function(gname) {
+      var list = groups[gname];
+      var wrap = document.createElement('div');
+      wrap.innerHTML = shellGrp30(gname, '<div class="shell-mini-row30"><button type="button" class="shell-mini30" data-aall="' + gname + '">全てON</button><button type="button" class="shell-mini30" data-anone="' + gname + '">全てOFF</button></div><div class="shell-grp-grid30"></div>');
+      var grp = wrap.firstChild; var grid = grp.querySelector('.shell-grp-grid30');
+      list.forEach(function(t) {
+        var lab = document.createElement('label'); lab.className = 'shell-set-check29';
+        var inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = vis[t] !== false; inp.setAttribute('data-shellan29', t);
+        inp.addEventListener('change', function() {
+          var v = shellAnVis29(); v[t] = inp.checked;
+          try { localStorage.setItem('shellAnVis29', JSON.stringify(v)); } catch (e) {}
+          if (typeof renderAnalysis === 'function') { try { renderAnalysis(); } catch (e) {} }
+          paintAnCounts();
+        });
+        lab.appendChild(inp); var sp = document.createElement('span'); sp.textContent = t; lab.appendChild(sp); grid.appendChild(lab);
+      });
+      grp.querySelector('[data-aall]').addEventListener('click', function() { var v = shellAnVis29(); list.forEach(function(t) { v[t] = true; }); try { localStorage.setItem('shellAnVis29', JSON.stringify(v)); } catch (e) {} if (typeof renderAnalysis === 'function') { try { renderAnalysis(); } catch (e) {} } paintAn(); });
+      grp.querySelector('[data-anone]').addEventListener('click', function() { var v = shellAnVis29(); list.forEach(function(t) { v[t] = false; }); try { localStorage.setItem('shellAnVis29', JSON.stringify(v)); } catch (e) {} if (typeof renderAnalysis === 'function') { try { renderAnalysis(); } catch (e) {} } paintAn(); });
+      anBox.appendChild(grp);
+    });
+    shellWireGrp30(anBox); paintAnCounts();
+  }
+  function paintAnCounts() {
+    var vis = shellAnVis29(); var groups = anGroups(); var names = Object.keys(groups);
+    anBox.querySelectorAll('.shell-grp30').forEach(function(grp, gi) {
+      var list = groups[names[gi]] || [];
+      var on = list.filter(function(t) { return vis[t] !== false; }).length;
+      var cnt = grp.querySelector('.cnt'); if (cnt) cnt.textContent = on + '/' + list.length + ' ON';
+      grp.querySelectorAll('input[data-shellan29]').forEach(function(inp) { inp.checked = vis[inp.getAttribute('data-shellan29')] !== false; });
+    });
+  }
+  paintAn();
+  var anAll = ov.querySelector('#shellSetAnAll30'), anNone = ov.querySelector('#shellSetAnNone30');
+  if (anAll) anAll.addEventListener('click', function() { var v = shellAnVis29(); shellAnTitles29().forEach(function(t) { v[t] = true; }); try { localStorage.setItem('shellAnVis29', JSON.stringify(v)); } catch (e) {} if (typeof renderAnalysis === 'function') { try { renderAnalysis(); } catch (e) {} } paintAn(); });
+  if (anNone) anNone.addEventListener('click', function() { var v = shellAnVis29(); shellAnTitles29().forEach(function(t) { v[t] = false; }); try { localStorage.setItem('shellAnVis29', JSON.stringify(v)); } catch (e) {} if (typeof renderAnalysis === 'function') { try { renderAnalysis(); } catch (e) {} } paintAn(); });
+}
+window.shellOpenSettings29 = shellOpenSettings29;
+
+// --- analysis jump pulldown: lists only ON sections; choosing one opens + scrolls to it ---
+function shellAnJumpRefresh30() {
+  var wrap = document.getElementById('shellAnalysisWrap');
+  if (!wrap) return;
+  var row = document.getElementById('shellAnJumpRow30');
+  if (!row) {
+    row = document.createElement('div'); row.id = 'shellAnJumpRow30';
+    row.innerHTML = '<label>表示する解析</label><select id="shellAnJump30"></select>';
+    var tabs = wrap.querySelector('#anTabs');
+    if (tabs && tabs.parentNode === wrap) wrap.insertBefore(row, tabs.nextSibling); else wrap.insertBefore(row, wrap.firstChild);
+    row.querySelector('#shellAnJump30').addEventListener('change', function() {
+      var t = this.value; if (!t) return;
+      var target = null;
+      wrap.querySelectorAll('.an-sec').forEach(function(sec) {
+        var hd = sec.querySelector('.an-h');
+        if (hd && hd.textContent.trim() === t && sec.style.display !== 'none') target = sec;
+      });
+      if (target) {
+        var body = target.querySelector('.an-sec-body');
+        if (body && body.style.display === 'none') { body.style.display = ''; var arr = target.querySelector('.an-h .an-arr'); if (arr) arr.textContent = '▼'; }
+        if (target.scrollIntoView) target.scrollIntoView({ block: 'start' });
+      }
+      this.value = '';
+    });
+  }
+  var sel = row.querySelector('#shellAnJump30');
+  var vis = shellAnVis29(); var cur = sel.value;
+  sel.innerHTML = '<option value="">選ぶとその解析へ移動します</option>';
+  wrap.querySelectorAll('.an-sec').forEach(function(sec) {
+    if (sec.style.display === 'none') return;
+    var hd = sec.querySelector('.an-h'); if (!hd) return;
+    var t = hd.textContent.trim();
+    if (!t || vis[t] === false) return;
+    var o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+(function() {
+  if (typeof renderAnalysis === 'function' && !renderAnalysis.__shell30) {
+    var base = renderAnalysis;
+    var wrapped = function() { var r = base.apply(this, arguments); try { shellAnJumpRefresh30(); } catch (e) {} return r; };
+    wrapped.__shell30 = true; renderAnalysis = wrapped;
+  }
+  if (typeof anShowTab === 'function' && !anShowTab.__shell30) {
+    var b2 = anShowTab;
+    var w2 = function() { var r = b2.apply(this, arguments); try { shellAnJumpRefresh30(); } catch (e) {} return r; };
+    w2.__shell30 = true; anShowTab = w2;
+  }
+})();
+
+// --- change list: proto30 entries ---
+try {
+  SHELL_CHANGES29.forEach(function(g) {
+    if (g.g === '全体') g.items.push('変更内容一覧ボタンと設定カードを、画面に直接置く形に変更（より確実に開くように）', '設定画面のON/OFFを、項目ごとに畳める形＋2列に作り替え（全てON／全てOFF付き）', 'iPhone向けに調整（画面下部の安全余白など）');
+    if (g.g === '解析') g.items.push('解析の画面に「表示する解析」のプルダウンを追加（選ぶとその解析へ移動。OFFにした項目は出ません）');
+  });
+} catch (e) {}
+</script>
+<script>
+// --- whats-new for proto30-ios ---
+(function() {
+  try { if (!localStorage.getItem('shellWhatsNewSeen29')) localStorage.setItem('shellWhatsNewSeen29', 'proto29'); } catch (e) {}
+  var KEY = 'shellWhatsNewSeen30';
+  var tries = 0;
+  var timer = setInterval(function() {
+    tries++;
+    if (tries > 240) { clearInterval(timer); return; }
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    if (seen === 'proto30') { clearInterval(timer); return; }
+    if (!document.body || !document.body.classList.contains('shell-at-rpm')) return;
+    var intro = document.getElementById('introBackdrop');
+    if (intro && intro.offsetParent !== null && getComputedStyle(intro).display !== 'none') return;
+    if (document.getElementById('shellOverlay29') || document.getElementById('shellOverlay27')) return;
+    clearInterval(timer);
+    shellOverlay29('<h3>変更点（proto30）</h3><ul><li>設定画面のON/OFFを、項目ごとに畳める形＋2列に作り替えました（グループごと・全体の全てON／全てOFF付き）</li><li>解析の画面に「表示する解析」プルダウンを追加。OFFにした項目はプルダウンにも出ません</li><li>変更内容一覧ボタンと設定カードを、画面に直接置く形に変えました（より確実に開くように）</li><li>iPhone向けの調整（画面下部の安全余白）</li></ul>');
+    try { localStorage.setItem(KEY, 'proto30'); } catch (e) {}
+  }, 500);
+})();
+</script>
 
 </body></html>
