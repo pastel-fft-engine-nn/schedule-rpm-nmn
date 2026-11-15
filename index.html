@@ -10445,39 +10445,33 @@ body.dark-mode .strip-intro-card{background:#1c1c1e;color:#f2f2f7}
       <div class="shell-card-name">モーター台帳</div>
       <div class="shell-card-sub">モーターごとの個体管理</div>
     </button>
+    <button type="button" class="shell-card" onclick="shellGoCourse()">
+      <div class="shell-card-icon">🧩</div>
+      <div class="shell-card-name">コース作成</div>
+      <div class="shell-card-sub">レイアウトをパズルで組む</div>
+    </button>
     <button type="button" class="shell-card" onclick="shellGo('rpm')">
       <div class="shell-card-icon">📈</div>
       <div class="shell-card-name">RPM</div>
       <div class="shell-card-sub">モーター音で回転数計測</div>
-    </button>
-    <button type="button" class="shell-card" onclick="shellGo('sw')">
-      <div class="shell-card-icon">⏱️</div>
-      <div class="shell-card-name">ストップウォッチ</div>
-      <div class="shell-card-sub">シグナル付き・スタート練習</div>
-    </button>
-    <button type="button" class="shell-card" onclick="shellGoRuns()">
-      <div class="shell-card-icon">🏁</div>
-      <div class="shell-card-name">走行記録</div>
-      <div class="shell-card-sub">大会・コースごとの記録</div>
     </button>
     <button type="button" class="shell-card" onclick="shellGo('analysis')">
       <div class="shell-card-icon">📊</div>
       <div class="shell-card-name">解析</div>
       <div class="shell-card-sub">ランキング・ロス・完走率</div>
     </button>
-    <button type="button" class="shell-card" onclick="shellGoCourse()">
-      <div class="shell-card-icon">🧩</div>
-      <div class="shell-card-name">コース作成</div>
-      <div class="shell-card-sub">レイアウトをパズルで組む</div>
+    <button type="button" class="shell-card" onclick="shellGoRuns()">
+      <div class="shell-card-icon">🏁</div>
+      <div class="shell-card-name">走行記録</div>
+      <div class="shell-card-sub">大会・コースごとの記録</div>
+    </button>
+    <button type="button" class="shell-card" onclick="shellGo('sw')">
+      <div class="shell-card-icon">⏱️</div>
+      <div class="shell-card-name">ストップウォッチ</div>
+      <div class="shell-card-sub">シグナル付き・スタート練習</div>
     </button>
     <button type="button" class="shell-card" id="shellSetCard29" onclick="window.shellOpenSettings29 && window.shellOpenSettings29()"><div class="shell-card-icon">⚙️</div><div class="shell-card-name">設定</div><div class="shell-card-sub">CSV・起動画面・解析表示</div></button>
-  </div>
-  <div class="shell-startset">
-    <div class="shell-startset-t">起動時の画面</div>
-    <div class="shell-startrow">
-      <button type="button" class="shell-startbtn" id="shellStartRpm" onclick="shellSetStartMode('rpm')">RPMトップ</button>
-      <button type="button" class="shell-startbtn" id="shellStartLast" onclick="shellSetStartMode('last')">前回の画面</button>
-    </div>
+  
   </div>
   <div class="shell-note" id="shellNote"></div>
   <div class="shell-foot">起動時の画面は上の設定で選べます</div>
@@ -16858,7 +16852,7 @@ function shellUnitType27() {
   if (units.length) {
     var uo = '<option value="">個体なし（種類だけ）</option>' + units.map(function(u) {
       var lbl = (u.name || '') + (u.no != null && u.no !== '' ? '（' + u.no + '番）' : '');
-      return '<option value="' + u.id + '">' + (lbl || u.id) + '</option>';
+      return '<option value="' + u.id + '">' + (lbl || '名称未設定') + '</option>';
     }).join('');
     area.innerHTML = '<label>個体</label><select id="shellUnitSel27" class="shell-unit-sel">' + uo + '</select>' +
       '<button type="button" class="shell-unit-btn" onclick="shellUnitApply27()">このモーターで使う</button>';
@@ -17200,7 +17194,7 @@ d.id = 'shellBuildStamp';
 d.style.cssText = 'text-align:center;color:#8a8f98;font-size:11px;padding:10px 0 26px;';
 l.appendChild(d);
 }
-d.textContent = 'shell proto31-ios';
+d.textContent = 'shell proto32-ios';
 }
 
 // ---------- item 4: shell settings (launcher card + overlay) ----------
@@ -17861,7 +17855,7 @@ var SHELL_CSV_GROUPS30 = [
   ['ロス', ['lossBase', 'lossNow', 'lossPct', 'lossBaseSrc']],
   ['比較（A/B）', ['abBase', 'abNow', 'abDiff', 'abName']]
 ];
-var SHELL_AN_PANELS30 = [['anPanelMotor', 'モーター'], ['anPanelLoss', 'ロス・A/B'], ['anPanelRates', '完走率'], ['anPanelEvent', '大会'], ['anPanelOuts', '負けパターン']];
+var SHELL_AN_PANELS30 = [['anPanelMotor', 'モーター'], ['anPanelLoss', 'ロス'], ['anPanelRates', '完走率'], ['anPanelEvent', '大会'], ['anPanelOuts', '負けパターン']];
 
 function shellGrp30(title, bodyHtml) {
   return '<div class="shell-grp30"><div class="shell-grp-h30"><span class="arr">▶</span><span>' + title + '</span><span class="cnt"></span></div><div class="shell-grp-b30">' + bodyHtml + '</div></div>';
@@ -17886,10 +17880,10 @@ function shellOpenSettings29() {
   h += '<div class="shell-set-row29"><label>CSV出力項目（RPM履歴用・RPMの設定と共通）</label>'
      + '<div class="shell-mini-row30"><button type="button" class="shell-mini30" id="shellSetColsAll29">全てON</button><button type="button" class="shell-mini30" id="shellSetColsNone29">全てOFF</button></div>'
      + '<div id="shellSetCsvCols29"></div></div>';
-  h += '<h4 class="shell-set-h29">解析の表示</h4>'
-     + '<div class="shell-mini-row30"><button type="button" class="shell-mini30" id="shellSetAnAll30">全てON</button><button type="button" class="shell-mini30" id="shellSetAnNone30">全てOFF</button></div>'
-     + '<div id="shellSetAn29"></div>' + '<div class="shell-set-note29">OFFにした項目は、解析の画面と、解析のプルダウンに出なくなります。解析を一度開くと、項目がここに増えます。</div>';
+  h += shellGrp30('解析の表示', '<div class="shell-mini-row30"><button type="button" class="shell-mini30" id="shellSetAnAll30">全てON</button><button type="button" class="shell-mini30" id="shellSetAnNone30">全てOFF</button></div>' + '<div id="shellSetAn29"></div>' + '<div class="shell-set-note29">OFFにした項目は、解析の画面と、解析のプルダウンに出なくなります。解析を一度開くと、項目がここに増えます。</div>');
   var ov = shellOverlay29(h);
+  var og32 = ov.querySelector('.shell-wn-card > .shell-grp30');
+  if (og32) { var oh32 = og32.querySelector('.shell-grp-h30'), ob32 = og32.querySelector('.shell-grp-b30'); oh32.addEventListener('click', function() { var open = ob32.classList.toggle('open'); oh32.querySelector('.arr').textContent = open ? '▼' : '▶'; }); }
   var startSel = ov.querySelector('#shellSetStart29');
   if (startSel) startSel.addEventListener('change', function() { if (typeof shellSetStartMode === 'function') shellSetStartMode(startSel.value); });
   var outBtn = ov.querySelector('#shellSetCsvOut29');
@@ -18114,6 +18108,47 @@ try {
     clearInterval(timer);
     shellOverlay29('<h3>変更点（proto31）</h3><ul><li>変更内容一覧と設定が、ランチャーから開いても表示されなかった不具合を直しました</li><li>原因は、モジュール画面以外を隠す仕組みにポップアップも巻き込まれていたことです。設定を先に開いてからRPMへ移ると設定が出てきた、という症状もこれで解消します</li></ul>');
     try { localStorage.setItem(KEY, 'proto31'); } catch (e) {}
+  }, 500);
+})();
+</script>
+
+
+<style id="shell32Css">
+/* ===== proto32: launcher grid 3 columns, smaller cards ===== */
+.shell-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+.shell-card { padding: 14px 6px 12px; }
+.shell-card-icon { font-size: 30px; }
+.shell-card-name { font-size: 14.5px; margin-top: 6px; }
+.shell-card-sub { font-size: 10px; line-height: 1.35; }
+</style>
+<script>
+// ===== proto32: change-list entries =====
+try {
+  SHELL_CHANGES29.forEach(function(g) {
+    if (g.g === '全体') g.items.push('モジュールの並びを3列に変更（1行目：台帳・コース作成・RPM／2行目：解析・走行記録・ストップウォッチ）', 'ランチャーの「起動時の画面」を削除（設定の中にあります）', '使うモーターの個体で、名前も番号も無いものは「名称未設定」と表示するように');
+    if (g.g === '解析') g.items.push('設定の「解析の表示」を、まるごと畳める形に変更（中に全てON／全てOFFとタブ別の項目）');
+  });
+} catch (e) {}
+</script>
+<script>
+// --- whats-new for proto32-ios ---
+(function() {
+  try { if (!localStorage.getItem('shellWhatsNewSeen31')) localStorage.setItem('shellWhatsNewSeen31', 'proto31'); } catch (e) {}
+  var KEY = 'shellWhatsNewSeen32';
+  var tries = 0;
+  var timer = setInterval(function() {
+    tries++;
+    if (tries > 240) { clearInterval(timer); return; }
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    if (seen === 'proto32') { clearInterval(timer); return; }
+    if (!document.body || !document.body.classList.contains('shell-at-rpm')) return;
+    var intro = document.getElementById('introBackdrop');
+    if (intro && intro.offsetParent !== null && getComputedStyle(intro).display !== 'none') return;
+    if (document.getElementById('shellOverlay29') || document.getElementById('shellOverlay27')) return;
+    clearInterval(timer);
+    shellOverlay29('<h3>変更点（proto32）</h3><ul><li>設定の「解析の表示」を、まるごと畳める形にしました（開くと全てON／全てOFFと、モーター／ロス／完走率／大会／負けパターンが出ます）</li><li>モジュールの並びを3列に変更：1行目＝台帳・コース作成・RPM、2行目＝解析・走行記録・ストップウォッチ（設定は3行目）</li><li>ランチャーの「起動時の画面」を消しました（設定の中にあります）</li><li>使うモーターの個体で、名前も番号も無いものは「名称未設定」と出るようにしました</li></ul>');
+    try { localStorage.setItem(KEY, 'proto32'); } catch (e) {}
   }, 500);
 })();
 </script>
