@@ -17200,7 +17200,7 @@ d.id = 'shellBuildStamp';
 d.style.cssText = 'text-align:center;color:#8a8f98;font-size:11px;padding:10px 0 26px;';
 l.appendChild(d);
 }
-d.textContent = 'shell proto30-ios';
+d.textContent = 'shell proto31-ios';
 }
 
 // ---------- item 4: shell settings (launcher card + overlay) ----------
@@ -18075,6 +18075,45 @@ try {
     clearInterval(timer);
     shellOverlay29('<h3>変更点（proto30）</h3><ul><li>設定画面のON/OFFを、項目ごとに畳める形＋2列に作り替えました（グループごと・全体の全てON／全てOFF付き）</li><li>解析の画面に「表示する解析」プルダウンを追加。OFFにした項目はプルダウンにも出ません</li><li>変更内容一覧ボタンと設定カードを、画面に直接置く形に変えました（より確実に開くように）</li><li>iPhone向けの調整（画面下部の安全余白）</li></ul>');
     try { localStorage.setItem(KEY, 'proto30'); } catch (e) {}
+  }, 500);
+})();
+</script>
+
+
+<style id="shell31Css">
+/* ===== proto31: popups must survive the module hide-others rules =====
+   The blanket rules (body.shell-at-* > *:not(...) { display:none !important })
+   also hid the body-level popup overlays, so popups opened from the launcher
+   existed in the DOM but were never visible. Whitelist them by ID. */
+body > #shellOverlay29#shellOverlay29, body > #shellOverlay27#shellOverlay27 { display: flex !important; }
+</style>
+<script>
+// ===== proto31: change-list entry for the popup visibility fix =====
+try {
+  SHELL_CHANGES29.forEach(function(g) {
+    if (g.g === '全体') g.items.push('変更内容一覧と設定が、ランチャーからでは表示されなかった不具合を修正（ポップアップが、画面の表示ルールに隠れていました）');
+  });
+} catch (e) {}
+</script>
+<script>
+// --- whats-new for proto31-ios ---
+(function() {
+  try { if (!localStorage.getItem('shellWhatsNewSeen30')) localStorage.setItem('shellWhatsNewSeen30', 'proto30'); } catch (e) {}
+  var KEY = 'shellWhatsNewSeen31';
+  var tries = 0;
+  var timer = setInterval(function() {
+    tries++;
+    if (tries > 240) { clearInterval(timer); return; }
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    if (seen === 'proto31') { clearInterval(timer); return; }
+    if (!document.body || !document.body.classList.contains('shell-at-rpm')) return;
+    var intro = document.getElementById('introBackdrop');
+    if (intro && intro.offsetParent !== null && getComputedStyle(intro).display !== 'none') return;
+    if (document.getElementById('shellOverlay29') || document.getElementById('shellOverlay27')) return;
+    clearInterval(timer);
+    shellOverlay29('<h3>変更点（proto31）</h3><ul><li>変更内容一覧と設定が、ランチャーから開いても表示されなかった不具合を直しました</li><li>原因は、モジュール画面以外を隠す仕組みにポップアップも巻き込まれていたことです。設定を先に開いてからRPMへ移ると設定が出てきた、という症状もこれで解消します</li></ul>');
+    try { localStorage.setItem(KEY, 'proto31'); } catch (e) {}
   }, 500);
 })();
 </script>
